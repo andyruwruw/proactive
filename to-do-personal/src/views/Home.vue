@@ -8,7 +8,9 @@
       <register v-if="loginorregister == 0"/>
     </div>
     <div v-else>
-
+      <list/>
+      <single-item v-if="item && edit"/>
+      <item-editor v-if="item && !edit"/>
     </div>
   </div>
 </template>
@@ -33,6 +35,7 @@ export default {
   data(){
     return {
       login: 1,
+      edit: 0,
     }
   },
   methods: {
