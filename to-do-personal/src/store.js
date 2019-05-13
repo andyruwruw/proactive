@@ -14,17 +14,17 @@ export default new Vuex.Store({
     loginorregister: -1,
 
     MUSIC: [
-      {tag: "song1", volume: 0.2},
+      {tag: "song1", volume: 1},
       {tag: "song2", volume: 0.2},
     ],
     song: 0,
     sound_pack: 1,
     SOUNDS: [
-      {tag: "click", volume: 0.2},
-      {tag: "delete", volume: 0.2},
-      {tag: "done", volume: 0.2},
-      {tag: "hover", volume: 0.2},
-      {tag: "server", volume: 0.2},
+      {tag: "click", volume: .1},
+      {tag: "delete", volume: .1},
+      {tag: "done", volume: 1},
+      {tag: "hover", volume: .05},
+      {tag: "server", volume: 1},
     ],
   },
   mutations: {
@@ -145,6 +145,10 @@ export default new Vuex.Store({
     },
     playSound(context, payload)
     {
+      if (this.state.sound_pack == 0)
+      {
+        return 0;
+      }
       try {
         console.log(this.state.sound_pack + this.state.SOUNDS[payload.sound].tag);
         var media = document.getElementById(this.state.sound_pack + this.state.SOUNDS[payload.sound].tag);
@@ -166,6 +170,10 @@ export default new Vuex.Store({
     },
     changeSong(context, payload)
     {
+      if (this.state.song == 0)
+      {
+        return 0;
+      }
       try{
         var media = document.getElementById(this.state.MUSIC[this.state.song].tag);
         var playPromise = media.pause();
