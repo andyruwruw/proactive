@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   password: String,
   name: String,
   tokens: [],
+  labels: Boolean,
 });
 
 userSchema.pre('save', async function(next) {
@@ -103,7 +104,8 @@ router.post('/', async (req, res) => {
     const user = new User({
       username: req.body.username,
       password: req.body.password,
-      name: req.body.name
+      name: req.body.name,
+      labels: true,
     });
     console.log("Creating User");
     await user.save();

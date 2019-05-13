@@ -36,17 +36,19 @@ html
 #maintitle {
   margin-top: 15px;
   margin-bottom: 0px;
+  opacity: .1;
   font-weight: lighter;
   text-align: center;
   font-size: 200%;
   color: #516477;
-  transition: font-size .2s ease 0s, margin-top .2s ease 0s;
-  animation: slide-up 2.5s ease;
+  transition: font-size .2s ease 0s, margin-top .2s ease 0s, opacity .2s ease;;
+  animation: title 7.5s ease;
 }
 #maintitle:hover{
   font-size: 210%;
   margin-top: 14px;
   color: #3f5366;
+  opacity: 1;
 }
 
 
@@ -72,6 +74,7 @@ html
   height: 50px;
   opacity: 1;
   margin: 10px 12px;
+  cursor: pointer;
 }
 
 #home
@@ -100,6 +103,59 @@ html
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(15deg);
+  }
+  50% {
+    transform: rotate(0deg);
+    transform: scale(1.2, 1.2);
+    opacity: 1;
+  }
+  75%
+  {
+    transform: rotate(-15deg);
+  }
+  100% {
+    
+    transform: translateY(0);
+  }
+}
+
+@keyframes title {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0);
+
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: .1;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1, 1);
+  }
+  50%
+  {
+    transform: scale(1.3, 1.3);
+  }
+  100% {
+    transform: scale(1, 1);
   }
 }
 

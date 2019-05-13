@@ -12,18 +12,12 @@
 
 <script>
 // @ is an alias to /src
-import List from '@/components/List.vue'
-import SingleItem from '@/components/SingleItem.vue'
-import ItemEditor from '@/components/ItemEditor.vue'
 import Login from '@/components/Login.vue'
 import Register from '@/components/Register.vue'
 
 export default {
   name: 'home',
   components: {
-    List,
-    SingleItem,
-    ItemEditor,
     Login,
     Register
   },
@@ -33,7 +27,14 @@ export default {
     }
   },
   methods: {
-
+    hover()
+    {
+          this.$store.dispatch("playSound", {sound: 0, volume: 0});
+    },
+    press()
+    {
+          this.$store.dispatch("playSound", {sound: 3, volume: 0});
+    },
   },
   computed: {
     user() {
@@ -48,8 +49,5 @@ export default {
 </script>
 
 <style scoped>
-#login-div
-{
-  margin-top: 10%;
-}
+
 </style>

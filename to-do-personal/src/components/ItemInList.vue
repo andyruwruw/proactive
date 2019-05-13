@@ -16,7 +16,14 @@ export default {
     }
   },
   methods: {
-
+    hover()
+    {
+          this.$store.dispatch("playSound", {sound: 0, volume: 0});
+    },
+    press()
+    {
+          this.$store.dispatch("playSound", {sound: 3, volume: 0});
+    },
   },
   computed: {
   }

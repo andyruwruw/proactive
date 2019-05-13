@@ -12,6 +12,20 @@ export default new Vuex.Store({
     item: null,
     deleted: false,
     loginorregister: -1,
+
+    MUSIC: [
+      {tag: "song1", volume: 0.2},
+      {tag: "song2", volume: 0.2},
+    ],
+    song: 0,
+    sound_pack: 1,
+    SOUNDS: [
+      {tag: "click", volume: 0.2},
+      {tag: "delete", volume: 0.2},
+      {tag: "done", volume: 0.2},
+      {tag: "hover", volume: 0.2},
+      {tag: "server", volume: 0.2},
+    ],
   },
   mutations: {
     setUser(state, user) {
@@ -30,6 +44,12 @@ export default new Vuex.Store({
       if (state.loginorregister == -1) {state.loginorregister = 1;}
       else if (state.loginorregister == 1) {state.loginorregister = 0;}
       else {state.loginorregister = 1;}
+    },
+    setSong(state, song) {
+      state.song = song;
+    },
+    setSoundPack(state, pack) {
+      state.sound_pack = pack;
     }
   },
   actions: {
@@ -86,7 +106,7 @@ export default new Vuex.Store({
           due: payload.due,
           subitems: payload.subitems,
         };
-        let response = await axios.post("/api/items/", data);
+        let response = await axios.post("/api/item/", data);
         context.commit('setItems', response.data);
       } catch(error) {
         console.log(error);
@@ -94,7 +114,7 @@ export default new Vuex.Store({
     },
     async getItems(context) {
       try {
-        let response = await axios.get("/api/items/");
+        let response = await axios.get("/api/item/");
         context.commit('setItems', response.data);
       } catch (error) {
         console.log(error);
@@ -102,7 +122,7 @@ export default new Vuex.Store({
     },
     async getItem(context, payload) {
       try {
-        let response = await axios.get("/api/items/" + payload._id);
+        let response = await axios.get("/api/item/" + payload._id);
         context.commit('setItem', response.data);
       } catch (error) {
         console.log(error);
@@ -110,7 +130,7 @@ export default new Vuex.Store({
     },
     async deleteItem(context, payload) {
       try {
-        let response = await axios.delete("/api/items/" + payload._id);
+        let response = await axios.delete("/api/item/" + payload._id);
         context.commit('setDeleted', true);
       } catch (error) {
         console.log(error);
@@ -122,6 +142,50 @@ export default new Vuex.Store({
       } catch (error) {
         console.log(error);
       }
+    },
+    playSound(context, payload)
+    {
+      try {
+        console.log(this.state.sound_pack + this.state.SOUNDS[payload.sound].tag);
+        var media = document.getElementById(this.state.sound_pack + this.state.SOUNDS[payload.sound].tag);
+        console.log("trying to play a sound");
+        if (payload.volume == 0)
+        {
+            media.volume = this.state.SOUNDS[payload.sound].volume;
+        }
+        else
+        {
+            media.volume = payload.volume;
+        }
+        const playPromise = media.play();
+        if (playPromise !== null) 
+            playPromise.catch(() => {media.play();})
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    changeSong(context, payload)
+    {
+      try{
+        var media = document.getElementById(this.state.MUSIC[this.state.song].tag);
+        var playPromise = media.pause();
+
+        context.commit('setSong', payload.song);
+
+        media = document.getElementById(this.state.MUSIC[this.state.song].tag);
+        media.volume = this.state.MUSIC[this.state.song].volume;
+        playPromise = media.play();
+        if (playPromise !== null){
+          playPromise.catch(() => { media.play(); })
+        }
+      } catch(error)
+      {
+        console.log(error);
+      }
+    },
+    changeSoundPack(context, payload)
+    {
+      context.commit('setSoundPack', payload.pack);
     }
   }
 })

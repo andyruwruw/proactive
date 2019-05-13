@@ -33,6 +33,9 @@ const itemSchema = new mongoose.Schema({
 
   // post item
 router.post("/", auth.verifyToken, User.verify, async (req, res) => {
+  console.log("Creating Item");
+  console.log(req.body.title);
+  console.log(req.body);
     const item = new Item({
       user: req.user,
 
@@ -52,6 +55,7 @@ router.post("/", auth.verifyToken, User.verify, async (req, res) => {
       }).sort({
         created: -1
       });
+      console.log("Sending back items.");
       return res.send(items);
     } catch (error) {
       console.log(error);

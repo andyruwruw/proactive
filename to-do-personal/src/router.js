@@ -2,8 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Settings from './views/Settings.vue'
-import Account from './views/Account.vue'
-import Item from './views/Item.vue'
+import ItemEdit from './views/ItemEdit.vue'
+import ItemView from './views/ItemView.vue'
+import ItemNew from './views/ItemNew.vue'
 
 Vue.use(Router)
 
@@ -17,9 +18,9 @@ export default new Router({
       component: Home
     },
     {
-      path: '/',
+      path: '/item/:_id',
       name: 'item',
-      component: Item
+      component: ItemView
     },
     {
       path: '/settings',
@@ -27,9 +28,14 @@ export default new Router({
       component: Settings
     },
     {
-      path: '/account',
-      name: 'account',
-      component: Account
+      path: '/edit/:_id',
+      name: 'edit',
+      component: ItemEdit
+    },
+    {
+      path: '/new',
+      name: 'new',
+      component: ItemNew
     }
   ]
 })

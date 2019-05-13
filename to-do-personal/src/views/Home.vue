@@ -1,16 +1,15 @@
 <template>
   <div class="home">
     <div v-if="!user" id="login-div">
-      <div v-if="loginorregister == -1" id="buttons">
-        <button @click="toggleLoginRegister" class="pure-button" id="login-button">Login to Start</button>
+      <div @click="toggleLoginRegister" v-if="loginorregister == -1" id="buttons">
+        <div id="image"></div>
+        <h1 id="login-button">Login to Start</h1>
       </div>
       <login v-if="loginorregister == 1"/>
       <register v-if="loginorregister == 0"/>
     </div>
-    <div v-else>
-      <list/>
-      <single-item v-if="item && edit"/>
-      <item-editor v-if="item && !edit"/>
+    <div id="wrapper" v-else>
+      <list class="div"/>
     </div>
   </div>
 </template>
@@ -18,8 +17,6 @@
 <script>
 // @ is an alias to /src
 import List from '@/components/List.vue'
-import SingleItem from '@/components/SingleItem.vue'
-import ItemEditor from '@/components/ItemEditor.vue'
 import Login from '@/components/Login.vue'
 import Register from '@/components/Register.vue'
 
@@ -27,8 +24,6 @@ export default {
   name: 'home',
   components: {
     List,
-    SingleItem,
-    ItemEditor,
     Login,
     Register,
   },
@@ -41,7 +36,7 @@ export default {
   methods: {
     toggleLoginRegister() {
         this.$store.dispatch("toggleLoginRegister");
-    }
+    },
   },
   computed: {
     user() {
@@ -62,9 +57,22 @@ export default {
     loginorregister()
     {
       return this.$store.state.loginorregister;
-    }
+    },
+    leftMenu()
+    {
+      return this.$store.state.leftMenu;
+    },
+    hover()
+    {
+          this.$store.dispatch("playSound", {sound: 0, volume: 0});
+    },
+    press()
+    {
+          this.$store.dispatch("playSound", {sound: 3, volume: 0});
+    },
   },
   async created() {
+    this.$store.dispatch("changeSong", {song: 0});
     if (this.user)
     {
       await this.$store.dispatch("getItems");
@@ -77,11 +85,67 @@ export default {
 <style scoped>
 #login-button
 {
-  margin-top: 20%;
   padding: 20px;
-  animation: fade-in 4s ease 0s;
-  font-size: 125%;
-  color: #3f5366;
-  background-color: rgb(241, 241, 241);
+  font-weight: lighter;
+  font-size: 150%;
+  color: #516477;
+  width: 200px;
+  border-radius: 100px;
+  margin: 0 auto;
+  margin-top: 20px;
+  background-color: rgba(241, 241, 241,0);
+  transition: background-color .5s ease, color .2s ease;
+  cursor: pointer;
 }
+
+#login-button:hover{
+background-color: rgb(24, 111, 192);
+color: white;
+}
+
+#wrapper {
+  display: flex;
+  margin: 30px;
+  margin-top: 0px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  animation: slide-up 2s ease 0s;
+}
+
+.div{
+    display: block;
+  width: 85%;
+  border-radius: 5px;
+  animation: slide-up 2s ease;
+}
+
+#buttons
+{
+  display: block;
+  margin: 0 auto;
+  margin-top: 7%;
+  animation: fade-in 6s ease 0s;
+  
+  width: calc(50vw);
+  height: calc(50vw);
+  border-radius: 1000px;
+  cursor: pointer;
+}
+
+#image{
+  display: block;
+  margin: 0 auto;
+  background-image: url("../assets/start.gif");
+  background-size: cover;
+  width: calc(30vh);
+  height: calc(30vh);
+  opacity: .75;
+
+}
+
+#image:hover{
+  animation: shake .5s ease 0s;
+}
+
+
 </style>
