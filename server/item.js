@@ -66,6 +66,7 @@ router.post("/", auth.verifyToken, User.verify, async (req, res) => {
   // get my items
   router.get("/", auth.verifyToken, User.verify, async (req, res) => {
     try {
+      console.log("sending ITEMS");
       let items = await Item.find({
         user: req.user
       }).sort({
@@ -83,32 +84,62 @@ router.get("/:_id", auth.verifyToken, User.verify, async (req, res) => {
       let item = await Item.findOne({
         _id: req.params._id
       });
-      return res.send(comments);
+      return res.send(item);
     } catch (error) {
       console.log(error);
       return res.sendStatus(500);
     }
   });
 
+  // Updates based on ID then sends back total Items.
 router.put("/:_id", auth.verifyToken, User.verify, async (req, res) => {
     try {
         let item = await Item.updateOne({
-        _id: req.params._id
+          _id: req.params._id
         },
         {
-            $set: {
-                "title": req.body.title,
-                "description": req.body.description,
-                "done": req.body.done,
-                "due": req.body.due,
-                "subitems": req.body.subitems,
-            }
+          $set: {
+              "title": req.body.title,
+              "description": req.body.description,
+              "done": req.body.done,
+              "due": req.body.due,
+              "subitems": req.body.subitems,
+          }
         });
-        return res.send(item);
+        let items = await Item.find({
+          user: req.user
+        }).sort({
+          created: -1
+        });
+        return res.send(items);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
     }
+});
+
+// Updates one item for being complete then sends back total Items.
+router.put("/done/:_id", auth.verifyToken, User.verify, async (req, res) => {
+  try {
+      let item = await Item.updateOne({
+      _id: req.params._id,
+      user: req.user
+      },
+      {
+          $set: {
+              "done": req.body.done,
+          }
+      });
+      let items = await Item.find({
+        user: req.user
+      }).sort({
+        created: -1
+      });
+      return res.send(items);
+  } catch (error) {
+      console.log(error);
+      return res.sendStatus(500);
+  }
 });
 
 router.delete("/:_id", auth.verifyToken, User.verify, async (req, res) => {
@@ -116,7 +147,12 @@ router.delete("/:_id", auth.verifyToken, User.verify, async (req, res) => {
         await Item.deleteOne({
             _id: req.params._id
         });
-        return res.send("Deleted");
+        let items = await Item.find({
+          user: req.user
+        }).sort({
+          created: -1
+        });
+        return res.send(items);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);

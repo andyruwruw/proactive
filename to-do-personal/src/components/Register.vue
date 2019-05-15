@@ -6,29 +6,25 @@
       <h2 v-if="true" class="title center">Register for an Account</h2>
 
       <div class="group">
-
-        <input v-model="name" class="textbox" type="text" placeholder="Real Name">
+        <input v-bind:class="{ error : error && name == ''}" v-model="name" class="textbox" type="text" placeholder="Real Name">
       </div>
 
       <div class="group">
 
-        <input v-model="username" class="textbox" type="text" placeholder="Username">
+        <input v-bind:class="{ error : error && username == ''}" v-model="username" class="textbox" type="text" placeholder="Username">
       </div>
 
       <div class="group">
 
-        <input v-model="password" type="password" placeholder="Password">
+        <input v-bind:class="{ error : error && password == ''}" v-model="password" type="password" placeholder="Password">
       </div>
-
+<p v-if="error" id="error-message">{{error}}</p>
       <div class="group end">
-        <button @click="toggleLoginRegister" class="loginButton pure-button">Login Instead</button> 
-        <button type="submit" class="submit pure-button pure-button-primary">Submit</button>
+        <button @mouseover="hover" @click="toggleLoginRegister" class="loginButton pure-button">Login Instead</button> 
+        <button @mouseover="hover" type="submit" class="submit pure-button pure-button-primary">Submit</button>
       </div>
     </fieldset>
   </form>
-  
-
-  <p v-if="error" class="error">{{error}}</p>
 </div>
 </template>
 
@@ -47,32 +43,41 @@ export default {
     async register() {
       try {
           console.log("hello");
+        this.press();
         this.error = await this.$store.dispatch("register", {
           name: this.name,
           username: this.username,
           password: this.password
         });
-                
+        await this.$store.dispatch("loadPreferences");
       } catch (error) {
         console.log(error);
       }
     },
     toggleLoginRegister() {
-        this.$store.dispatch("toggleLoginRegister");
+      this.press();
+      this.$store.dispatch("toggleLoginRegister");
     },
     hover()
     {
-          this.$store.dispatch("playSound", {sound: 0, volume: 0});
+          this.$store.dispatch("playSound", {sound: 3, volume: 0});
     },
     press()
     {
-          this.$store.dispatch("playSound", {sound: 3, volume: 0});
+          this.$store.dispatch("playSound", {sound: 0, volume: 0});
     },
   }
 }
 </script>
 
 <style scoped>
+.error {
+  background-color: rgb(253, 231, 231);
+}
+#error-message {
+  color: rgba(172, 28, 28,.7) !important;
+  margin-bottom: 0px;
+}
 #register
 {
     margin-top: 4%;

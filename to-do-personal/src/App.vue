@@ -1,4 +1,5 @@
 <template>
+<div>
   <div id="app">
     <div id="nav">
       <router-link id="home" to="/"></router-link> <h1 v-if="true" id="maintitle">PROACTIVITY</h1>
@@ -6,14 +7,64 @@
     </div>
     <router-view/>
   </div>
+  <a id="github" href="https://github.com/andyruwruw/To-Do-Personal"/>
+</div>
 </template>
 
 <style>
 @import url('https://fonts.googleapis.com/css?family=Roboto+Slab');
-html
+
+.lights {
+  transition: background-color .1s ease, color .1s ease, border .1s ease, invert .1s ease;
+}
+
+.invertlights {
+  filter: invert(100%);
+}
+
+#background
 {
   background: rgb(240, 239, 239);
 }
+
+.lights-off-one
+{
+  background: rgb(29, 30, 32) !important;
+}
+
+.lights-off-two
+{
+  background: rgb(40, 41, 44) !important;}
+
+.lightsoffthree
+{
+  background: rgba(51, 52, 56, 0.356) !important;
+  border: rgb(54, 55, 59) !important;
+}
+
+
+.inverttext1
+{
+  color: rgba(255, 255, 255, 0.795) !important;
+}
+
+.inverttext2
+{
+  color: rgba(255, 255, 255, 0.61) !important;
+}
+
+.inverttext3
+{
+  color: rgba(255, 255, 255, 0.445) !important;
+}
+
+.inverttext6
+{
+  color: rgba(255, 255, 255, 0.596) !important;
+}
+
+
+
 
 #app {
   font-family: 'Roboto Slab', serif;
@@ -30,6 +81,7 @@ html
 
   max-width: 1300px;
   min-width: 500px;
+
   min-height: calc(95vh);
 }
 
@@ -51,6 +103,63 @@ html
   opacity: 1;
 }
 
+#github {
+  margin: 0 auto;
+  display: block;
+  width: 30px;
+  height: 30px;
+  background-color: rgba(0,0,0,0);
+  background-size: cover;
+  background-image: url("./assets/github.png");
+  margin-bottom: 30px;
+  margin-top: 20px;
+  opacity: .3;
+  transition: opacity .5s ease;
+  animation: github-out .25s linear;
+}
+
+#github:hover {
+  animation: github .5s linear;
+  opacity: 1;
+  transform: scale(1.1, 1.1);
+}
+
+@keyframes github {
+  0% {
+    transform: rotate(0deg) scale(1, 1);
+  }
+  50%
+  {
+    transform: rotate(180deg) scale(1.3, 1.3);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.1, 1.1);
+  }
+}
+
+@keyframes github-out {
+  0% {
+    transform: rotate(360deg) scale(1, 1);
+  }
+  50%
+  {
+    transform: rotate(180deg) scale(1.3, 1.3);
+  }
+  100% {
+    transform: rotate(0deg) scale(1, 1);
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 #nav {
   padding: 20px;
@@ -158,5 +267,7 @@ html
     transform: scale(1, 1);
   }
 }
+
+
 
 </style>

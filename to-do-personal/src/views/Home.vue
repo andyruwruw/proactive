@@ -1,7 +1,8 @@
 <template>
   <div class="home">
+    <div v-bind:class="{ invertlights: preferences.colors}" v-if="user" @mouseover="hover" @click="createItem" class="fade" id="new"><button id="addTask"/></div>
     <div v-if="!user" id="login-div">
-      <div @click="toggleLoginRegister" v-if="loginorregister == -1" id="buttons">
+      <div @mouseover="hover" @click="toggleLoginRegister" v-if="loginorregister == -1" id="buttons">
         <div id="image"></div>
         <h1 id="login-button">Login to Start</h1>
       </div>
@@ -35,8 +36,26 @@ export default {
   },
   methods: {
     toggleLoginRegister() {
-        this.$store.dispatch("toggleLoginRegister");
+      this.$store.dispatch("playSound", {sound: 0, volume: 0});
+      this.$store.dispatch("toggleLoginRegister");
     },
+    createItem()
+    {
+      this.$store.dispatch("playSound", {sound: 0, volume: 0});
+      this.$router.push('new');
+    },
+    hover()
+    {
+      this.$store.dispatch("playSound", {sound: 3, volume: 0});
+    },
+    press()
+    {
+      this.$store.dispatch("playSound", {sound: 0, volume: 0});
+    },
+    startMusic()
+    {
+      this.$store.dispatch("playSong");
+    }
   },
   computed: {
     user() {
@@ -58,31 +77,99 @@ export default {
     {
       return this.$store.state.loginorregister;
     },
-    leftMenu()
-    {
-      return this.$store.state.leftMenu;
-    },
-    hover()
-    {
-          this.$store.dispatch("playSound", {sound: 0, volume: 0});
-    },
-    press()
-    {
-          this.$store.dispatch("playSound", {sound: 3, volume: 0});
-    },
+    preferences() {
+      return this.$store.state.preferences;
+    }
   },
   async created() {
-    this.$store.dispatch("changeSong", {song: 0});
+    await this.$store.dispatch("getUser");
     if (this.user)
     {
       await this.$store.dispatch("getItems");
     }
+    if (this.preferences.colors == 1)
+      {
+        this.$store.dispatch("updatePreferences", {tag: "colors", set: 1});
+        let changes = [
+          {id: "background", class: "lights-off-one"},
+          {id: "app", class: "lights-off-two"},
+          {id: "maintitle", class: "inverttext6"},
+          {id: "home", class: "invertlights"},
+          {id: "settings", class: "invertlights"},
+        ];
+
+        for (var i = 0; i < changes.length; i++)
+        {
+          var element = document.getElementById(changes[i].id);
+          element.classList.add(changes[i].class);
+        }
+      }
+      else 
+      {
+        this.$store.dispatch("updatePreferences", {tag: "colors", set: 0});
+
+        let changes = [
+          {id: "background", class: "lights-off-one"},
+          {id: "app", class: "lights-off-two"},
+          {id: "maintitle", class: "inverttext6"},
+          {id: "home", class: "invertlights"},
+          {id: "settings", class: "invertlights"},
+        ];
+        for (var i = 0; i < changes.length; i++)
+        {
+          var element = document.getElementById(changes[i].id);
+          if (element.classList.contains(changes[i].class))
+          {
+            element.classList.remove(changes[i].class)
+          }
+        }
+
+      }
+    this.startMusic();
   },
   
 }
 </script>
 
 <style scoped>
+.fade{
+  animation: fade-in 2s ease;
+}
+
+.home {
+  position: relative;
+}
+
+#new{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 0 auto;
+  padding: 10px;
+  border-radius: 100px;
+  position: absolute;
+  left: calc(73px + 2%);
+  top: -82px;
+  opacity: .75;
+  transition: background .2s ease 0s, opacity .2s ease 0s;
+  cursor: pointer;
+}
+
+#addTask
+{
+  width: 35px;
+  height: 35px;
+  background-size: cover;
+  background-image: url("../assets/new.png");
+  border: 0px solid black;
+  background-color: rgba(0,0,0,0);
+}
+
+#new:hover{
+  background: rgb(179, 215, 236);
+  opacity: 1;
+}
+
 #login-button
 {
   padding: 20px;
@@ -105,18 +192,17 @@ color: white;
 
 #wrapper {
   display: flex;
-  margin: 30px;
+  margin: 10px;
   margin-top: 0px;
+  padding-bottom: 30px;
   justify-content: space-around;
   flex-wrap: wrap;
-  animation: slide-up 2s ease 0s;
 }
 
 .div{
     display: block;
   width: 85%;
   border-radius: 5px;
-  animation: slide-up 2s ease;
 }
 
 #buttons

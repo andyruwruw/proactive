@@ -18,8 +18,8 @@ export default new Router({
       component: Home
     },
     {
-      path: '/item/:_id',
-      name: 'item',
+      path: '/view/:_id',
+      name: 'view',
       component: ItemView
     },
     {

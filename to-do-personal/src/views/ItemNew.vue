@@ -1,14 +1,14 @@
 <template>
-<div id="new">
+<div @click="playMusic" id="new">
     <div id="big-box">
       <div class="main">
-        <div class="flex-title">
-          <div id="task-image"/>
-          <h1>Task Details</h1>
+        <div v-bind:class="{inverttitle: preferences.colors}" class="flex-title">
+          <div v-bind:class="{ invertlights: preferences.colors}" id="task-image"/>
+          <h1 v-bind:class="{ invertlights: preferences.colors}">Task Details</h1>
         </div>
         <p id="error" v-if="error != ''">{{error}}</p>
-        <input class="nomargin input" v-bind:class="{texterror: isError}" type="text" placeholder="Task" v-model="title"/>
-        <textarea class="input" id="descript" cols="40" rows="5" placeholder="Description" v-model="description"/>
+        <input class="nomargin input" v-bind:class="{texterror: isError, invertinput: preferences.colors}" type="text" placeholder="Task" v-model="title"/>
+        <textarea v-bind:class="{invertinput: preferences.colors}" class="input" id="descript" cols="40" rows="5" placeholder="Description" v-model="description"/>
 
         <div id="buttons-div">
           <button class="button create" @mouseover="hover" @click="createTask" id="createItem"><div id="create-image"/>Create Task</button>
@@ -18,29 +18,28 @@
       <div class="side-bar">
         <div id="sub">
           <div class="flex-no-wrap-title">
-            <div class="flex-title no-margin">
-              <div id="sub-image"/>
-              <h1>Sub Tasks</h1>
-              <button v-if="!addSubtask" @mouseover="hover" @click="startSubtask" class="small-button add-button"></button>
-              <button v-if="addSubtask" @mouseover="hover" @click="deleteSubtask" class="small-button minus-button"></button>
+            <div v-bind:class="{ invertbutton: preferences.colors}" class="flex-title no-margin">
+              <div v-bind:class="{ invertlights: preferences.colors , alittlemargin : !preferences.labels[2]}" id="sub-image"/>
+              <h1 v-bind:class="{ invertsub: preferences.colors}">Sub Tasks</h1>
+              <button v-bind:class="{ invertlights: preferences.colors}" v-if="!addSubtask" @mouseover="hover" @click="startSubtask" class="small-button add-button"></button>
+              <button v-bind:class="{ invertlights: preferences.colors}" v-if="addSubtask" @mouseover="hover" @click="deleteSubtask" class="small-button minus-button"></button>
             </div>
-            
           </div>
           <div class="fade" v-if="!addSubtask">
             <div id="subtask" class="fade" v-for="subtask in subitems" v-bind:key="subtask.title">
-              <div class="flex-no-wrap fade">
+              <div v-bind:class="{invertinput: preferences.colors}"  class="flex-no-wrap fade">
                 <div id="subtaskDetails">
                   <p id="subtaskTitle">{{subtask.title}}</p>
                 </div>
                 <div id="subtaskButtons">
-                  <button class="small-subtask-button" id="edit-subtask" @mouseover="hover" @click="editSubtaskList(subtask.title, subtask.description, subtask.number)"></button>
+                  <button  class="small-subtask-button" id="edit-subtask" @mouseover="hover" @click="editSubtaskList(subtask.title, subtask.description, subtask.number)"></button>
                   <button class="small-subtask-button" id="delete-subtask" @mouseover="hover" @click="deleteSubtaskList(subtask.number)"></button>
                 </div>
               </div>
             </div>
           </div>
-          <div class="fade" v-if="addSubtask">
-            <input class="input" id="subTaskInput" type="text" placeholder="Sub-Task" v-model="subtaskInput"/>
+          <div class="fade" id="addSubtaskDiv" v-if="addSubtask">
+            <input v-bind:class="{invertinput: preferences.labels[2]}" class="input" id="subTaskInput" type="text" placeholder="Sub-Task" v-model="subtaskInput"/>
             <div id="subbuttons">
               <button class="subButton" @mouseover="hover" @click="createSubtask" id="createItem"><div id="create-image"/>Create</button>
               <button class="subButton" @mouseover="hover" @click="deleteSubtask" id="deleteItem"><div id="delete-image"/>Delete</button>
@@ -49,17 +48,17 @@
         </div>
         <div id="due">
           <div class="flex-no-wrap-title">
-            <div class="flex-title no-margin">
-              <div id="sub-image"/>
-              <h1>Due Date</h1>
-              <button v-if="!addDate" @mouseover="hover" @click="startDate" class="small-button add-button"></button>
-              <button v-if="addDate" @mouseover="hover" @click="closeDate" class="small-button minus-button"></button>
+            <div v-bind:class="{ invertbutton: preferences.colors}" class="flex-title no-margin">
+              <div v-bind:class="{ invertlights: preferences.colors , alittlemargin : !preferences.labels[2]}" id="cal-image"/>
+              <h1 v-bind:class="{ invertsub: preferences.colors}" @click="startDate">Due Date</h1>
+              <button v-bind:class="{ invertlights: preferences.colors}" v-if="!addDate" @mouseover="hover" @click="startDate" class="small-button add-button"></button>
+              <button v-bind:class="{ invertlights: preferences.colors}" v-if="addDate" @mouseover="hover" @click="closeDate" class="small-button minus-button"></button>
             </div>
             
           </div>
           <div class="fade" v-if="dueString != ''">
             <div class="fade" v-if="!addDate" id="dueDiv">
-              <p id="dueString">Due: {{dueString}}</p>
+              <p @click="editDate" id="dueString">Due: {{dueString}}</p>
               <div class="buttonsDueDiv">
                 <button @mouseover="hover" @click="editDate" class="invert small-button edit-button"></button>
                 <button @mouseover="hover" @click="deleteDate" class="invert small-button delete-button"></button>
@@ -68,15 +67,15 @@
           </div>
           <div v-if="addDate" class="fade">
             <div id="calendar-div">
-              <div id="month-and-year">{{months[month]}} {{year}}</div>
+              <div v-bind:class="{invertinput: preferences.colors}" id="month-and-year">{{months[month]}} {{year}}</div>
               <div id="calendar">
                 <div class="calendar-row" v-for="row in calendar" v-bind:key="row.num">
-                  <div class="calendar-day" @mouseover="hover" @click="setDate(block.Date)" v-bind:class="{active: block.active, today: block.today, due: block.due}" v-for="block in row.blocks" v-bind:key="block.date">{{block.date}}</div>
+                  <div class="calendar-day" @mouseover="hover" @click="setDate(block.Date)" v-bind:class="{active: block.active && !preferences.colors, today: block.today, due: block.due, invertdate: preferences.colors && block.active}" v-for="block in row.blocks" v-bind:key="block.date">{{block.date}}</div>
                 </div>
               </div>
               <div id="calendar-buttons">
-                <button class="calendar-button" id="previous" @mouseover="hover" @click="previous">Previous</button>
-                <button class="calendar-button" id="next" @mouseover="hover" @click="next">Next</button>
+                <button v-bind:class="{invertbutton: preferences.colors}" class="calendar-button" id="previous" @mouseover="hover" @click="previous">Previous</button>
+                <button v-bind:class="{invertbutton: preferences.colors}" class="calendar-button" id="next" @mouseover="hover" @click="next">Next</button>
               </div>
             </div>
           </div>
@@ -138,9 +137,9 @@ export default {
         this.error = "Name your task to save it."
       }
     },
-    deleteNew()
+    async deleteNew()
     {
-      this.$store.dispatch("playSound", {sound: 1, volume: 0});
+      await this.$store.dispatch("playSound", {sound: 1, volume: 0});
       this.title = "";
       this.description = "";
       this.done = false;
@@ -219,6 +218,7 @@ export default {
     deleteDate(){
       this.$store.dispatch("playSound", {sound: 1, volume: 0});
       this.due = null,
+      this.displayCalendar();
       this.dueString = "";
       this.addDate = false;
     },
@@ -307,6 +307,10 @@ export default {
       this.month = (this.month === 0) ? 11 : this.month - 1;
       this.displayCalendar();
     },
+    playMusic()
+    {
+      this.$store.dispatch("playMusic");
+    }
   },
   computed: {
     isError(){
@@ -315,15 +319,90 @@ export default {
         return true;
       }
       return false;
+    },
+    preferences() {
+      return this.$store.state.preferences;
     }
   },
-  created() {
+  async created() {
+    await this.$store.dispatch("getUser");
+    if (this.preferences.colors == 1)
+      {
+        this.$store.dispatch("updatePreferences", {tag: "colors", set: 1});
+        let changes = [
+          {id: "background", class: "lights-off-one"},
+          {id: "app", class: "lights-off-two"},
+          {id: "maintitle", class: "inverttext6"},
+          {id: "home", class: "invertlights"},
+          {id: "settings", class: "invertlights"},
+        ];
+
+        for (var i = 0; i < changes.length; i++)
+        {
+          var element = document.getElementById(changes[i].id);
+          element.classList.add(changes[i].class);
+        }
+      }
+      else 
+      {
+        this.$store.dispatch("updatePreferences", {tag: "colors", set: 0});
+
+        let changes = [
+          {id: "background", class: "lights-off-one"},
+          {id: "app", class: "lights-off-two"},
+          {id: "maintitle", class: "inverttext6"},
+          {id: "home", class: "invertlights"},
+          {id: "settings", class: "invertlights"},
+        ];
+        for (var i = 0; i < changes.length; i++)
+        {
+          var element = document.getElementById(changes[i].id);
+          if (element.classList.contains(changes[i].class))
+          {
+            element.classList.remove(changes[i].class)
+          }
+        }
+
+      }
     this.createCalendar();
   }
 }
 </script>
 
 <style scoped>
+.alittlemargin {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+}
+.invertbutton {
+  background-color: rgb(67, 71, 75) !important;
+  border: 1px solid rgb(44, 44, 44) !important;
+  color: rgb(146, 146, 146) !important;
+}
+
+.invertsub {
+  color: rgb(216, 216, 216) !important;
+}
+.inverttitle {
+  background-color: rgb(67, 71, 75) !important;
+  border: 1px solid rgb(44, 44, 44) !important;
+}
+.invertinput {
+  background-color: rgb(49, 51, 54) !important;
+  border: 1px solid rgb(44, 44, 44) !important;
+  color: rgb(146, 146, 146) !important;
+}
+.invertdate {
+  background-color: rgb(49, 51, 54) !important;
+  border: 1px solid rgb(44, 44, 44) !important;
+  color: rgb(146, 146, 146);
+}
+
+.invertdate:hover {
+  background-color: rgb(130, 224, 113) !important;
+  color: black !important;
+}
+
 #big-box {
   display: flex;
   width: 85%;
@@ -347,7 +426,7 @@ export default {
   border-radius: 10px;
   transition: color .2s ease, background-color .2s ease;
 }
-.calendar-day:hover {
+.active:hover {
   background-color: rgb(130, 224, 113) !important;
   color: black;
 }
@@ -483,10 +562,12 @@ export default {
 
 
 .flex-no-wrap {
+  margin: 0 auto;
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
   padding-left: 10px;
+  width: 75%;
   padding-right: 10px;
   background-color: rgba(241, 241, 241, 0.637);
   border-radius: 10px;
@@ -515,7 +596,7 @@ export default {
   color: red;
   margin: 0 auto;
   margin-top: 0px;
-  margin-bottom: 0px;
+  margin-bottom: 5px;
 }
 #new{
     position: relative;
@@ -524,6 +605,11 @@ export default {
 }
 .fade {
   animation: fade-in 2s ease;
+}
+
+#addSubtaskDiv {
+  width: 80%;
+  margin: 0 auto;
 }
 
 #delete{
@@ -716,6 +802,15 @@ h1{
     height: 20px;
     background-size: cover;
     margin-right: 10px;
+}
+
+#cal-image {
+  background-image: url("../assets/calendar.png");
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-size: cover;
+  margin-right: 10px;
 }
 
 .nomargin {
