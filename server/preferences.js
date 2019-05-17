@@ -24,6 +24,12 @@ const preferencesSchema = new mongoose.Schema({
     music: Number,
     svolume: Number,
     mvolume: Number,
+    openmenus: Boolean,
+    datemade: Boolean,
+    mainmenu: Boolean,
+    itembackground: Boolean,
+    tooltipsactive: Boolean,
+    groupsetting: Number,
   });
   
 const Preferences = mongoose.model('Preferences', preferencesSchema);
@@ -43,6 +49,12 @@ router.post("/", auth.verifyToken, User.verify, async (req, res) => {
       music: 0,
       svolume: 1,
       mvolume: 1,
+      openmenus: false,
+      datemade: false,
+      mainmenu: true,
+      itembackground: true,
+      tooltipsactive: true,
+      groupsetting: 0,
     });
     try {
       await preferences.save();
@@ -69,6 +81,7 @@ router.post("/", auth.verifyToken, User.verify, async (req, res) => {
 
 router.put("/", auth.verifyToken, User.verify, async (req, res) => {
     try {
+      console.log(req.body.itembackground);
         await Preferences.updateOne({
             user: req.user
         },
@@ -84,6 +97,12 @@ router.put("/", auth.verifyToken, User.verify, async (req, res) => {
                 "music": req.body.music,
                 "svolume": req.body.svolume,
                 "mvolume": req.body.mvolume,
+                "openmenus": req.body.openmenus,
+                "datemade" : req.body.datemade,
+                "mainmenu" : req.body.mainmenu,
+                "itembackground" : req.body.itembackground,
+                "tooltipsactive" : req.body.tooltipsactive,
+                "groupsetting": req.body.groupsetting,
             }
         });
         let send = await Preferences.findOne({
@@ -113,6 +132,12 @@ router.put("/reset", auth.verifyToken, User.verify, async (req, res) => {
                 "music": 0,
                 "svolume": 1,
                 "mvolume": 1,
+                "openmenus": false,
+                "datemade": false,
+                "mainmenu": true,
+                "itembackground": true,
+                "tooltipsactive": true,
+                "groupsetting": 0
             }
         });
         let send = await Preferences.findOne({

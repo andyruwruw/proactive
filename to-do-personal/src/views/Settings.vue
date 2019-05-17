@@ -56,6 +56,11 @@
             <div v-bind:class="{ unactive : allLabelsOff, invertlights: preferences.colors}" @mouseover="hover" @click="allLabels(false)" class="button image" id="button"/>
             <h3 v-bind:class="{ unactive : allLabelsOff, invertlights: preferences.colors}">All Labels Off</h3>
           </div>
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.tooltipsactive != 0" @mouseover="hover" @click="changeToolTips(0)" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.tooltipsactive == 0" @mouseover="hover" @click="changeToolTips(1)" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Tool Tips On / Off</h3>
+          </div>
         </div>
 
         <div class="flex-title">
@@ -113,7 +118,52 @@
           <div class="flex">
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.labels[0]" @mouseover="hover" @click="taskLabels()" class="button image" id="switchon"/>
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[0]" @mouseover="hover" @click="taskLabels()" class="button image" id="switchoff"/>
-            <h3 v-bind:class="{ invertlights: preferences.colors}" >Labels</h3>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Labels On / Off</h3>
+          </div>
+
+          <div class="flex">
+            <div v-if="a == 1">
+            <div v-bind:class="{ invertlights: preferences.colors}"  @mouseover="hover" @click="changemainMenu(0)" class="button image" id="switchon"/>
+            </div>
+            <div v-else>
+              <div v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="changemainMenu(1)" class="button image" id="switchoff"/>
+            </div>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Main Menu On / Off</h3>
+          </div>
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="b" @mouseover="hover" @click="openMenus(false)" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!b" @mouseover="hover" @click="openMenus(true)" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Automatically Open Menus On / Off</h3>
+          </div>
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="c" @mouseover="hover" @click="itemBackgroundsSet(false)" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!c" @mouseover="hover" @click="itemBackgroundsSet(true)" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Item Backgrounds On / Off</h3>
+          </div>
+
+
+
+
+
+          <div class="flex add-margin-top">
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.groupsetting" @click="changeGroupSettings(0)" @mouseover="hover" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.groupsetting" @click="changeGroupSettings(1)" @mouseover="hover" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Task Groups On / Off</h3>
+          </div>
+
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting, groupnone: preferences.groupsetting == 0, groupcustom: preferences.groupsetting == 2, groupdue: preferences.groupsetting == 1 , volumemargin: groupSettings}" @click="groupSettingsOn()" @mouseover="hover" class="button image"/>
+            <h3 v-if="groupSettings" v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" >Groups: </h3>
+            <button @click="changeGroupSettingsCLOSE(1)" v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" class="groupbutton" v-if="groupSettings">By Due Date</button>
+            <button @click="changeGroupSettingsCLOSE(2)" v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" class="groupbutton" v-if="groupSettings">Custom Groups</button>
+            <h3 v-if="!groupSettings" v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" >Groups: {{groupOption[preferences.groupsetting]}}</h3>
+
+          </div>
+
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" v-if="preferences.labels[0]" @mouseover="hover" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" v-if="!preferences.labels[0]" @mouseover="hover" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" >Edit Task Groups</h3>
           </div>
         </div>
 
@@ -125,7 +175,12 @@
           <div class="flex">
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.labels[1]" @mouseover="hover" @click="viewLabels()" class="button image" id="switchon"/>
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[1]" @mouseover="hover" @click="viewLabels()" class="button image" id="switchoff"/>
-            <h3 v-bind:class="{ invertlights: preferences.colors}" >Labels</h3>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Labels On / Off</h3>
+          </div>
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.datemade" @mouseover="hover" @click="showDateMade(0)" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.datemade" @mouseover="hover" @click="showDateMade(1)" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Show Date Made On / Off</h3>
           </div>
         </div>
 
@@ -137,7 +192,17 @@
           <div class="flex">
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchon"/>
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchoff"/>
-            <h3 v-bind:class="{ invertlights: preferences.colors}" >Labels</h3>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Labels On / Off</h3>
+          </div>
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >Due Dates On / Off</h3>
+          </div>
+          <div class="flex">
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchoff"/>
+            <h3 v-bind:class="{ invertlights: preferences.colors}" >SubTasks On / Off</h3>
           </div>
         </div>
       </div>
@@ -177,12 +242,93 @@ export default {
       editSoundPack: false,
 
       saved: true,
+      changes: true,
 
-      music: ["What a Difference a Day Makes", "What a Difference a Day Makes", "Ova Da Wudz", "Chopin 24 Preludes Op. 28 No. 15", "Akita Mani Yo", "Day and Night", "Random", "Random", "Random", "Random", "Random", "Random"],
+      groupSettings: false,
+      groupEdit: false,
+
+      groupOption: ["None", "By Due Date", "Custom Groups"],
+
+      music: ["What a Difference a Day Makes", "What a Difference a Day Makes", "Ova Da Wudz", "Chopin 24 Preludes Op. 28 No. 15", "Akita Mani Yo", "Day and Night", "Random", "Random", "Random", "Random", "Random", "Random", "Random", "Random",],
       soundPacks: ["Original", "Original", "8-Bit", "Wood Chips", "Bubblez"],
+
+      a: true,
+      b: false,
+      c: true,
+      d: true,
+      e: 0,
     }
   },
+
   methods: {
+    groupSettingsOn(){
+      this.press();
+      this.groupSettings = !this.groupSettings;
+    },
+    async changeGroupSettings(changeto)
+    {
+      await this.press();
+      if (!changeto){
+        this.groupSettings = false;
+      }
+      await this.$store.dispatch("updatePreferences", {tag: "groupsetting", set: changeto});
+      this.e = changeto;
+      this.saved = false;
+      this.changes = false;
+    },  
+    async changeGroupSettingsCLOSE(changeto)
+    {
+      await this.press();
+      this.groupSettings = false;
+      await this.$store.dispatch("updatePreferences", {tag: "groupsetting", set: changeto});
+      this.e = changeto;
+      this.saved = false;
+      this.changes = false;
+    },     
+    async changeToolTips(changeto)
+    {
+        await this.press();
+        await this.$store.dispatch("updatePreferences", {tag: "tooltipsactive", set: changeto});
+        this.d = changeto;
+        this.saved = false;
+        this.changes = false;
+        
+    },
+    async itemBackgroundsSet(changeto)
+    {
+        await this.press();
+        await this.$store.dispatch("updatePreferences", {tag: "itembackground", set: changeto});
+        this.c = changeto;
+        this.saved = false;
+        this.changes = false;
+        
+    },
+    async changemainMenu(changeto) {
+        await this.press();
+        await this.$store.dispatch("updatePreferences", {tag: "mainmenu", set: changeto});
+        this.a = changeto;
+        this.saved = false;
+        this.changes = false;
+    },
+    async showDateMade(set) {
+      if (this.preferences.datemade != set)
+      {
+        await this.press();
+        await this.$store.dispatch("updatePreferences", {tag: "datemade", set: set});
+        this.saved = false;
+        this.changes = false;
+      }
+    },
+    async openMenus(set) {
+      if (this.preferences.openmenus != set)
+      {
+        await this.press();
+        await this.$store.dispatch("updatePreferences", {tag: "openmenus", set: set});
+        this.saved = false;
+        this.changes = false;
+      }
+      this.b = set;
+    },
     async save()
     {
       this.$store.dispatch("playSound", {sound: 4, volume: 0});
@@ -216,45 +362,45 @@ export default {
         this.password = "";
       }
     },
-    async saveUserName()
-    {
-      this.press();
-      this.editUser = false;
-      this.username = "";
-    },
     undoUserName()
     {
       this.press();
       this.editUser = false;
       this.username = "";
     },
-    changePassword()
-    {
-      this.press();
-      this.editPass = true;
-      if (this.editUser)
-      {
-        this.editUser = false;
-        this.username = "";
-      }
-    },
-    async savePassword()
-    {
-      this.editPass = false;
-      this.password = "";
-      this.press();
-    },
+
     undoPassword()
     {
       this.editPass = false;
       this.password = "";
       this.press();
     },
-    resetSettings()
+    async resetSettings()
     {
       this.press();
-      this.$store.dispatch("resetSettings");
+      if (this.preferences.colors) {
+        await this.$store.dispatch("updatePreferences", {tag: "colors", set: 0});
+
+        let changes = [
+          {id: "background", class: "lights-off-one"},
+          {id: "app", class: "lights-off-two"},
+          {id: "maintitle", class: "inverttext6"},
+          {id: "home", class: "invertlights"},
+          {id: "settings", class: "invertlights"},
+        ];
+        for (var i = 0; i < changes.length; i++)
+        {
+          var element = document.getElementById(changes[i].id);
+          if (element.classList.contains(changes[i].class))
+          {
+            element.classList.remove(changes[i].class)
+          }
+        }
+      }
+      await this.$store.dispatch("resetSettings");
+      
       this.saved = false;
+      this.changes = false;
     },
     lights()
     {
@@ -298,6 +444,7 @@ export default {
 
       }
       this.saved = false;
+      this.changes = false;
     },
     async allLabels(set)
     {
@@ -308,6 +455,7 @@ export default {
           await this.press();
           await this.$store.dispatch("updatePreferences", {tag: "labels", at: i, set: set});
           this.saved = false;
+          this.changes = false;
           this.labelChange = true;
         }
       }
@@ -326,6 +474,7 @@ export default {
         await this.$store.dispatch("updatePreferences", {tag: "sound_pack", set: 1});
       }
       this.saved = false;
+      this.changes = false;
       this.press();
     },
     soundFXVolume(num)
@@ -339,6 +488,7 @@ export default {
         this.$store.dispatch("updatePreferences", {tag: "svolume", set: num});
       }
       this.saved = false;
+      this.changes = false;
     },
     async soundPackChoice(num)
     {
@@ -351,6 +501,7 @@ export default {
         this.$store.dispatch("updatePreferences", {tag: "sound_pack", set: num});
       }
       this.saved = false;
+      this.changes = false;
     },
     async songChoice(num)
     {
@@ -363,6 +514,7 @@ export default {
         this.$store.dispatch("changeSong", {music: num});
       }
       this.saved = false;
+      this.changes = false;
     },
     async musicToggle()
     {
@@ -377,6 +529,7 @@ export default {
         this.$store.dispatch("changeSong", {music: 1});
       }
       this.saved = false;
+      this.changes = false;
     },
     musicVolume(num)
     {
@@ -390,6 +543,7 @@ export default {
         this.startMusic();
       }
       this.saved = false;
+      this.changes = false;
     },
     async taskLabels()
     {
@@ -400,6 +554,7 @@ export default {
       await this.$store.dispatch("updatePreferences", {tag: "labels", at: 0, set: true});
       this.labelChange = true;
       this.saved = false;
+      this.changes = false;
     },
     async viewLabels()
     {
@@ -410,6 +565,7 @@ export default {
       await this.$store.dispatch("updatePreferences", {tag: "labels", at: 1, set: true});
       this.labelChange = true;
       this.saved = false;
+      this.changes = false;
     },
     async editLabels()
     {
@@ -420,8 +576,42 @@ export default {
       await this.$store.dispatch("updatePreferences", {tag: "labels", at: 2, set: true});
       this.labelChange = true;
       this.saved = false;
+      this.changes = false;
     },
-
+    async savePassword() {
+      let data = {
+        password: this.password
+      };
+      await this.$store.dispatch("changePassword", data);
+      await this.$store.dispatch("getItems");
+      await this.$store.dispatch("loadPreferences");
+      this.editPass = false;
+      this.password = "";
+      this.press();
+    },
+    async saveUserName() {
+      let data = {
+        username: this.username
+      };
+      console.log("huh");
+      console.log(data);
+      await this.$store.dispatch("changeUserName", data);
+      await this.$store.dispatch("getItems");
+      await this.$store.dispatch("loadPreferences");
+      this.press();
+      this.editUser = false;
+      this.username = "";
+    },
+    changePassword()
+    {
+      this.press();
+      this.editPass = true;
+      if (this.editUser)
+      {
+        this.editUser = false;
+        this.username = "";
+      }
+    },
   },
   computed: {
     user() {
@@ -432,6 +622,9 @@ export default {
       return this.$store.state.loginorregister;
     },
     preferences() {
+      if (this.saved || this.changes){
+        this.changes = true;
+      }
       return this.$store.state.preferences;
     },
     allLabelsOn() {
@@ -493,13 +686,38 @@ export default {
 
       }
     this.startMusic();
+    this.a = this.preferences.mainmenu;
+    this.b = this.preferences.openmenus;
+    this.c = this.preferences.itembackground;
   }
 }
 </script>
 
 <style scoped>
+.groupbutton{
+  margin: 0px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 150px;
+  padding: 1px;
+  text-align: center;
+  border-radius: 20px;
+  color: rgb(65, 65, 65);
+  background-color: rgba(236, 236, 236, 0.445);
+}
+.groupbutton:hover{
+  margin: 0px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 150px;
+  padding: 1px;
+  text-align: center;
+  border-radius: 20px;
+  color: rgb(0, 0, 0);
+  background-color: rgba(236, 236, 236, 0.801);
+}
 .add-margin-top {
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
 #button-flex {
@@ -723,6 +941,21 @@ button {
 
 #password {
   background-image: url("../assets/password.png");
+}
+
+.groupnone
+{
+background-image: url("../assets/group-off.png");
+}
+
+.groupdue
+{
+background-image: url("../assets/group-date.png");
+}
+
+.groupcustom
+{
+background-image: url("../assets/group-on.png");
 }
 
 #password-done {

@@ -32,14 +32,14 @@
                   <p id="subtaskTitle">{{subtask.title}}</p>
                 </div>
                 <div id="subtaskButtons">
-                  <button  class="small-subtask-button" id="edit-subtask" @mouseover="hover" @click="editSubtaskList(subtask.title, subtask.description, subtask.number)"></button>
-                  <button class="small-subtask-button" id="delete-subtask" @mouseover="hover" @click="deleteSubtaskList(subtask.number)"></button>
+                  <button   v-bind:class="{ invertlights: preferences.colors}" class="small-subtask-button" id="edit-subtask" @mouseover="hover" @click="editSubtaskList(subtask.title, subtask.description, subtask.number)"></button>
+                  <button  v-bind:class="{ invertlights: preferences.colors}" class="small-subtask-button" id="delete-subtask" @mouseover="hover" @click="deleteSubtaskList(subtask.number)"></button>
                 </div>
               </div>
             </div>
           </div>
           <div class="fade" id="addSubtaskDiv" v-if="addSubtask">
-            <input v-bind:class="{invertinput: preferences.labels[2]}" class="input" id="subTaskInput" type="text" placeholder="Sub-Task" v-model="subtaskInput"/>
+            <input v-bind:class="{invertinput: preferences.colors}" class="input" id="subTaskInput" type="text" placeholder="Sub-Task" v-model="subtaskInput"/>
             <div id="subbuttons">
               <button class="subButton" @mouseover="hover" @click="createSubtask" id="createItem"><div id="create-image"/>Create</button>
               <button class="subButton" @mouseover="hover" @click="deleteSubtask" id="deleteItem"><div id="delete-image"/>Delete</button>
@@ -60,8 +60,8 @@
             <div class="fade" v-if="!addDate" id="dueDiv">
               <p @click="editDate" id="dueString">Due: {{dueString}}</p>
               <div class="buttonsDueDiv">
-                <button @mouseover="hover" @click="editDate" class="invert small-button edit-button"></button>
-                <button @mouseover="hover" @click="deleteDate" class="invert small-button delete-button"></button>
+                <button @mouseover="hover" v-bind:class="{ invertlights: preferences.colors}" @click="editDate" class="invert small-button edit-button"></button>
+                <button @mouseover="hover" v-bind:class="{ invertlights: preferences.colors}" @click="deleteDate" class="invert small-button delete-button"></button>
               </div>
             </div>
           </div>
@@ -121,14 +121,16 @@ export default {
           title: this.title,
           description: this.description,
           due: this.due,
-          subitems: this.subitems
+          subitems: this.subitems,
+          group: -1,
+          priority: 0,
+          index: this.index
         };
         this.title = "";
         this.description = "";
         this.done = false;
         this.subitems = [];
         this.error = '';
-        this.$store.dispatch("changeLeftMenu", {status: 0});
         await this.$store.dispatch("postItem", data);
         this.$store.dispatch("playSound", {sound: 4, volume: 0});
         this.$router.push('/');
@@ -309,7 +311,7 @@ export default {
     },
     playMusic()
     {
-      this.$store.dispatch("playMusic");
+      this.$store.dispatch("playSong");
     }
   },
   computed: {
@@ -319,6 +321,10 @@ export default {
         return true;
       }
       return false;
+    },
+    index()
+    {
+      return this.$store.state.items.length;
     },
     preferences() {
       return this.$store.state.preferences;
@@ -424,6 +430,7 @@ export default {
   height: 23px;
   margin: 5px;
   border-radius: 10px;
+  cursor: pointer;
   transition: color .2s ease, background-color .2s ease;
 }
 .active:hover {
@@ -454,6 +461,7 @@ export default {
 #month-and-year {
   background-color: rgb(240, 240, 240);
   border-radius: 10px;
+  cursor: default;
 }
 
 #next {
@@ -497,6 +505,7 @@ export default {
   margin-left: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
+  cursor: default;
 }
 
 .due {
@@ -521,7 +530,7 @@ export default {
   margin-bottom: 30px;
 }
 #subTaskInput {
-  margin-top: 0px;
+  margin-top: 20px;
   margin-bottom: 20px;
 }
 
@@ -558,6 +567,7 @@ export default {
 #subtaskTitle {
   margin-top: 0px;
   text-align: left;
+  cursor: default;
 }
 
 
@@ -641,7 +651,7 @@ h1{
   text-align: center;
   font-size: 120%;
   color: #474a4d;
-
+cursor: default;
   padding: 5px;
   border-radius: 5px;
 }

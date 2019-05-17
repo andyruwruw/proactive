@@ -9,14 +9,16 @@
           <div v-if="subitems.length != 0" id="sub">
             <h1 v-bind:class="{invertlights: preferences.colors}" v-if="preferences.labels[1]" id="subtitle">Sub Tasks</h1>
             <div class="subtask" v-for="subtask in subitems" v-bind:key="subtask.title">
-              <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" v-on:click="endsubtask(subtask.title)" class="small-button-done done-button"/>
-              <p v-bind:class="{invertlights: preferences.colors}" id="subtaskTitle">{{subtask.title}}</p>
+              <button v-if="subtask.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" v-on:click="doneSubtask(subtask.title, false)" class="small-button-done done-button"/>
+              <button v-if="!subtask.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" v-on:click="doneSubtask(subtask.title, true)" class="small-button-done done-no-button"/>
+              <p v-bind:class="{invertlights: preferences.colors, crossedOut : subtask.done}" id="subtaskTitle">{{subtask.title}}</p>
             </div>
           </div>
           
         </div>
-        <div v-if="due != null" class="side-bar">
-            <h1 id="dueString">Due: {{dueString}}</h1>
+        <div  class="side-bar">
+            <h1 v-if="due != null" id="dueString">Due: {{dueString}}</h1>
+            <h1 v-if="preferences.datemade" id="dateMade">{{formatDate}}</h1>
         </div>
       </div>
     </div>
@@ -36,7 +38,7 @@
 
 <script>
 // @ is an alias to /src
-
+import moment from 'moment';
 export default {
   name: 'itemview',
   data() {
@@ -64,6 +66,30 @@ export default {
       else
       this.menu = true;
     },
+    async doneSubtask(title, set) {
+      for (var i = 0; i < this.subitems.length; i++)
+      {
+        if (this.subitems[i].title == title)
+        {
+          this.subitems[i].done = set;
+          this.$store.dispatch("playSound", {sound: 2, volume: 0});
+          break;
+        }
+      }
+      let data = {
+          _id: this.$route.params._id,
+          title: this.title,
+          description: this.description,
+          due: this.due,
+          subitems: this.subitems,
+          group: -1,
+          priority: 0,
+          index: this.item.index,
+        };
+      await this.$store.dispatch("updateItem", data);
+      await this.$store.dispatch("getItem", {_id: this.$route.params._id});
+    },
+    
     async endsubtask(title) {
       for (var i = 0; i < this.subitems.length; i++)
       {
@@ -78,9 +104,13 @@ export default {
           title: this.title,
           description: this.description,
           due: this.due,
-          subitems: this.subitems
+          subitems: this.subitems,
+          group: -1,
+          priority: 0,
+          index: this.item.index,
         };
-        await this.$store.dispatch("updateItem", data);
+      await this.$store.dispatch("updateItem", data);
+      await this.$store.dispatch("getItem", {_id: this.$route.params._id});
         this.$store.dispatch("playSound", {sound: 2, volume: 0});
     },
     editItem() {
@@ -98,7 +128,6 @@ export default {
       this.$store.dispatch("playSound", {sound: 1, volume: 0});
       this.$router.push('/');
     },
-    
     startDate(){
       this.press();
       this.addDate = true;
@@ -199,7 +228,16 @@ export default {
     },
     preferences() {
       return this.$store.state.preferences;
-    }
+    },
+   formatDate() {
+      let date = this.item.created;
+      if (moment(date).diff(Date.now(), 'days') < 15)
+        return moment(date).fromNow();
+      else
+        return moment(date).format('d MMMM YYYY');
+     
+
+    },
   },
   async created() {
     await this.$store.dispatch("getItem", {_id: this.$route.params._id});
@@ -207,7 +245,7 @@ export default {
     this.description = this.item.description;
     this.done = this.item.done;
     
-    if (this.due != null)
+    if (this.item.due != null)
     {
       this.due = new Date(this.item.due);
       this.dueString = "" + this.due.getDate() + " " + this.months[this.due.getMonth()] + ", " + this.due.getFullYear();
@@ -269,8 +307,14 @@ p{
   background-color: rgba(104, 186, 253, 0);
   border: 0px;
 }
-.done-button {
+.done-no-button {
   background-image: url("../assets/done-no.png");
+  border-radius: 3px;
+  opacity: .5;
+  transition: background-color .2s ease;
+}
+.done-button {
+  background-image: url("../assets/done.png");
   border-radius: 3px;
   opacity: .5;
   transition: background-color .2s ease;
@@ -315,12 +359,18 @@ p{
 }
 #subtitle {
   color: rgb(168, 168, 168);
+  cursor: default;
 }
 #subtaskTitle {
   margin-top: 0px;
   margin-left: 5px;
   text-align: left;
+  cursor: default;
   color: rgba(167, 167, 167, 0.829);
+}
+.crossedOut {
+  text-decoration: line-through;
+  opacity: .3;
 }
 .fade {
   animation: fade-in 2s ease;
@@ -346,10 +396,12 @@ h1 {
 }
 #title {
   font-size: 150%;
+  cursor: default;
 }
 
 #description {
   color: rgba(124, 124, 124, 0.863);
+  cursor: default;
 }
 
 #menuButton
@@ -524,6 +576,16 @@ h1 {
 
 #dueString {
   color: rgb(92, 92, 92);
+  margin-left: 5px;
+  margin-top: 5px;
+  margin-bottom: 0px;
+  cursor: default;
+  padding-bottom: 0px;
+  text-align: right !important;
+}
+
+#dateMade {
+  color: rgb(190, 190, 190);
   margin-left: 5px;
   margin-top: 5px;
   margin-bottom: 5px;

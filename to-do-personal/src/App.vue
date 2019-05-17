@@ -2,7 +2,7 @@
 <div>
   <div id="app">
     <div id="nav">
-      <router-link id="home" to="/"></router-link> <h1 v-if="true" id="maintitle">PROACTIVITY</h1>
+      <router-link id="home" to="/"></router-link> <h1 v-if="true" id="maintitle">PROACTIVE</h1>
       <router-link id="settings" to="/settings"></router-link>
     </div>
     <router-view/>
@@ -40,6 +40,12 @@
 {
   background: rgba(51, 52, 56, 0.356) !important;
   border: rgb(54, 55, 59) !important;
+}
+
+.nobackground
+{
+  background: rgba(51, 52, 56, 0) !important;
+  border: rgba(54, 55, 59, 0) !important;
 }
 
 
@@ -92,6 +98,7 @@
   font-weight: lighter;
   text-align: center;
   font-size: 200%;
+  cursor: default;
   color: #516477;
   transition: font-size .2s ease 0s, margin-top .2s ease 0s, opacity .2s ease;;
   animation: title 7.5s ease;

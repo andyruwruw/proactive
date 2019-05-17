@@ -23,6 +23,10 @@ const itemSchema = new mongoose.Schema({
 
     subitems: [],
 
+    group: Number,
+    priority: Number,
+    index: Number,
+
     created: {
       type: Date,
       default: Date.now
@@ -44,6 +48,10 @@ router.post("/", auth.verifyToken, User.verify, async (req, res) => {
 
       done: false,
 
+      group: req.body.group,
+      priority: req.body.priority,
+      index: req.body.index,
+
       due: req.body.due,
 
       subitems: req.body.subitems,
@@ -53,7 +61,7 @@ router.post("/", auth.verifyToken, User.verify, async (req, res) => {
       let items = await Item.find({
         user: req.user
       }).sort({
-        created: -1
+        index: 1
       });
       console.log("Sending back items.");
       return res.send(items);
@@ -70,7 +78,7 @@ router.post("/", auth.verifyToken, User.verify, async (req, res) => {
       let items = await Item.find({
         user: req.user
       }).sort({
-        created: -1
+        index: 1
       });
       return res.send(items);
     } catch (error) {
@@ -104,18 +112,43 @@ router.put("/:_id", auth.verifyToken, User.verify, async (req, res) => {
               "done": req.body.done,
               "due": req.body.due,
               "subitems": req.body.subitems,
+              "group": req.body.group,
+              "priority": req.body.priority,
+              "index": req.body.index,
           }
         });
         let items = await Item.find({
           user: req.user
         }).sort({
-          created: -1
+          index: 1
         });
         return res.send(items);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
     }
+});
+
+router.put("/index/:_id", auth.verifyToken, User.verify, async (req, res) => {
+  try {
+      let item = await Item.updateOne({
+        _id: req.params._id
+      },
+      {
+        $set: {
+            "index": req.body.index,
+        }
+      });
+      let items = await Item.find({
+        user: req.user
+      }).sort({
+        index: 1
+      });
+      return res.send(items);
+  } catch (error) {
+      console.log(error);
+      return res.sendStatus(500);
+  }
 });
 
 // Updates one item for being complete then sends back total Items.
@@ -133,7 +166,7 @@ router.put("/done/:_id", auth.verifyToken, User.verify, async (req, res) => {
       let items = await Item.find({
         user: req.user
       }).sort({
-        created: -1
+        index: 1
       });
       return res.send(items);
   } catch (error) {
@@ -150,7 +183,7 @@ router.delete("/:_id", auth.verifyToken, User.verify, async (req, res) => {
         let items = await Item.find({
           user: req.user
         }).sort({
-          created: -1
+          index: 1
         });
         return res.send(items);
     } catch (error) {

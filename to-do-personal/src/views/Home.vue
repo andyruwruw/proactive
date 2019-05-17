@@ -9,7 +9,7 @@
       <login v-if="loginorregister == 1"/>
       <register v-if="loginorregister == 0"/>
     </div>
-    <div id="wrapper" v-else>
+    <div id="wrapper" class="below" v-else>
       <list class="div"/>
     </div>
   </div>
@@ -126,6 +126,7 @@ export default {
 
       }
     this.startMusic();
+    console.log("ITEM BACKGROUND: " + this.preferences.itembackground);
   },
   
 }

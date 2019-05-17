@@ -20,13 +20,13 @@ export default new Vuex.Store({
       {tag: "chopin", volume: 0.3},
       {tag: "akita-mani-yo", volume: 0.06},
       {tag: "day-and-night", volume: 0.12},
-      {tag: "random1", volume: 0.02},
-      {tag: "random2", volume: 0.2},
-      {tag: "random3", volume: 0.2},
-      {tag: "random4", volume: 0.2},
-      {tag: "random5", volume: 0.2},
-      {tag: "random6", volume: 0.2},
-      {tag: "random7", volume: 0.2},
+      {tag: "random1", volume: 0.08},
+      {tag: "random2", volume: 0.08},
+      {tag: "random3", volume: 0.08},
+      {tag: "random4", volume: 0.08},
+      {tag: "random5", volume: 0.08},
+      {tag: "random6", volume: 0.08},
+      {tag: "random7", volume: 0.08},
     ],
     preferences: {
       labels: [true, true, true],
@@ -39,6 +39,10 @@ export default new Vuex.Store({
       music: 0,
       svolume: 1,
       mvolume: 1,
+      datemade: 0,
+      itembackground: true,
+      tooltipsactive: true,
+      groupsetting: 0,
     },
     SOUNDS: [
       {tag: "click", volume: [0, .1, .007, .01, .01]},
@@ -47,10 +51,14 @@ export default new Vuex.Store({
       {tag: "hover", volume: [0, .05, .004, .005, .006]},
       {tag: "server", volume: [0, .05, .009, .01, .05]},
     ],
+    random: 3,
   },
   mutations: {
     setUser(state, user) {
       state.user = user;
+    },
+    setRandom(state, random) {
+      state.random = random;
     },
     setItems(state, items) {
       for (var i = 0; i < items.length; i++)
@@ -89,6 +97,13 @@ export default new Vuex.Store({
       state.preferences.music = preferences.music;
       state.preferences.svolume = preferences.svolume;
       state.preferences.mvolume = preferences.mvolume;
+      state.preferences.datemade = preferences.datemade;
+      state.preferences.openmenus = preferences.openmenus;
+      console.log(state.preferences.mainmenu +" "+ preferences.mainmenu);
+      state.preferences.mainmenu = preferences.mainmenu;
+      state.preferences.itembackground = preferences.itembackground;
+      state.preferences.tooltipsactive = preferences.tooltipsactive;
+      state.preferences.groupsetting = preferences.groupsetting;
     },
     setMenu(state, payload) {
       var set = -1;
@@ -123,6 +138,9 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    async changeIndex(context, payload) {
+      await axios.put("/api/item/index/" + payload._id, payload);
+    },
     toggleLoginRegister(context) {
       try {
         context.commit('setLoginOrRegister');
@@ -179,6 +197,8 @@ export default new Vuex.Store({
           description: payload.description,
           due: payload.due,
           subitems: payload.subitems,
+          group: payload.group,
+          priority: payload.priority
         };
         let response = await axios.post("/api/item/", data);
         context.commit('setItems', response.data);
@@ -197,7 +217,6 @@ export default new Vuex.Store({
     async getItem(context, payload) {
       try {
         let response = await axios.get("/api/item/" + payload._id);
-        console.log(response.data);
         context.commit('setItem', response.data);
       } catch (error) {
         console.log(error);
@@ -206,7 +225,6 @@ export default new Vuex.Store({
     async updateItem(context, payload) {
       try {
         let response = await axios.put("/api/item/" + payload._id, payload);
-        console.log(response.data);
         context.commit('setItems', response.data);
         context.commit('setItem', null);
       } catch (error) {
@@ -244,6 +262,41 @@ export default new Vuex.Store({
         console.log(error);
       }
     },
+    async deleteDoneItems(context) {
+      try {
+        let response = this.state.items;
+        for (var i = 0; i < this.state.items.length; i++)
+        {
+          if (this.state.items[i].done)
+          {
+            response = await axios.delete("/api/item/" + this.state.items[i]._id);
+          }
+        }
+        context.commit('setItems', response.data);
+        
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async changePassword(context, payload) {
+      try {
+        let data = {
+          password: payload.password,
+        }
+        let response = await axios.put("/api/users/newpassword", data);
+        context.commit('setUser', response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async changeUserName(context, payload) {
+      try {
+        let response = await axios.put("/api/users/newusername", payload);
+        context.commit('setUser', response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    },
     undoDeleted(context, payload) {
       try {
         context.commit('setDeleted', false);
@@ -262,7 +315,6 @@ export default new Vuex.Store({
         if (payload.volume == 0)
         {
             let volumeLevel = this.state.SOUNDS[payload.sound].volume[this.state.preferences.sound_pack];
-            console.log(volumeLevel);
             let multiplyer = 1;
             switch (this.state.preferences.svolume) {
               case 0:
@@ -294,6 +346,10 @@ export default new Vuex.Store({
       try{
         var media = document.getElementById(this.state.MUSIC[this.state.preferences.music].tag);
         var playPromise = media.pause();
+        if (payload.music == 6)
+        {
+          payload.music = (Math.ceil(Math.random() * 100) % 7 ) + 6;
+        }
 
         context.commit('setSong', payload.music);
 
@@ -365,6 +421,7 @@ export default new Vuex.Store({
     },
     async changePreferences(context)
     {
+      console.log("RIGHT HERE ANDREW" + this.state.preferences.itembackground);
       let data = {
         labels: this.state.preferences.labels,
         colors: this.state.preferences.colors,
@@ -376,8 +433,15 @@ export default new Vuex.Store({
         music: this.state.preferences.music,
         svolume: this.state.preferences.svolume,
         mvolume: this.state.preferences.mvolume,
+        openmenus: this.state.preferences.openmenus,
+        datemade: this.state.preferences.datemade,
+        mainmenu: this.state.preferences.mainmenu,
+        itembackground: this.state.preferences.itembackground,
+        tooltipsactive: this.state.preferences.tooltipsactive,
+        groupsetting: this.state.preferences.groupsetting,
       }
       let response = await axios.put("/api/preferences", data);
+      console.log(response.data);
       context.commit('setPreferences', response.data);
     },
     async updatePreferences(context, payload) {
@@ -392,6 +456,12 @@ export default new Vuex.Store({
         music: this.state.preferences.music,
         svolume: this.state.preferences.svolume,
         mvolume: this.state.preferences.mvolume,
+        openmenus: this.state.preferences.openmenus,
+        datemade: this.state.preferences.datemade,
+        mainmenu: this.state.preferences.mainmenu,
+        itembackground: this.state.preferences.itembackground,
+        tooltipsactive: this.state.preferences.tooltipsactive,
+        groupsetting: this.state.preferences.groupsetting,
       };
       if (payload.tag == "labels")
       {
@@ -400,14 +470,13 @@ export default new Vuex.Store({
       else 
       {
         newPref[payload.tag] = payload.set;
+        console.log(payload.tag + " set to " + payload.set);
       }
       context.commit('setPreferences', newPref);
     },
     async loadPreferences(context)
     {
       let response = await axios.get("/api/preferences");
-      console.log("LJSD:FJS:DF");
-      console.log(response.data);
       context.commit('setPreferences', response.data);
     },
     resetSettings(context)
@@ -423,6 +492,12 @@ export default new Vuex.Store({
         music: 1,
         svolume: 1,
         mvolume: 1,
+        openmenus: false,
+        datemade: false,
+        mainmenu: true,
+        itembackground: true,
+        tooltipsactive: true,
+        groupsetting: 0,
       };
       context.commit('setPreferences', newPref);
     }

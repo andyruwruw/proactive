@@ -37,7 +37,7 @@
             
           </div>
           <div class="fade" v-if="!addSubtask">
-            <div id="subtask" class="fade" v-for="subtask in subitems" v-bind:key="subtask.title">
+            <div id="subtask" v-for="subtask in subitems" v-bind:key="subtask.title">
               <div v-bind:class="{invertinput: preferences.colors}" class="flex-no-wrap fade">
                 <div id="subtaskDetails">
                   <p id="subtaskTitle">{{subtask.title}}</p>
@@ -137,7 +137,10 @@ export default {
           title: this.title,
           description: this.description,
           due: this.due,
-          subitems: this.subitems
+          subitems: this.subitems,
+          group: -1,
+          priority: 0,
+          index: this.item.index,
         };
         this.title = "";
         this.description = "";
@@ -348,6 +351,10 @@ export default {
     item() {
       return this.$store.state.item;
     },
+    index()
+    {
+      return this.$store.state.items.length;
+    },
     preferences() {
       return this.$store.state.preferences;
     }
@@ -500,6 +507,7 @@ export default {
   display: block;
   width: 23px;
   height: 23px;
+  cursor: default;
   margin: 5px;
   border-radius: 10px;
   transition: color .2s ease, background-color .2s ease;
@@ -533,6 +541,7 @@ export default {
 #month-and-year {
   background-color: rgb(240, 240, 240);
   border-radius: 10px;
+  cursor: default;
 }
 
 #next {
@@ -575,6 +584,7 @@ export default {
 #dueString {
   color: white;
   margin-left: 5px;
+  cursor: default;
 }
 
 .due {
@@ -599,7 +609,7 @@ export default {
   margin-bottom: 30px;
 }
 #subTaskInput {
-  margin-top: 0px;
+  margin-top: 20px;
   margin-bottom: 20px;
 }
 
@@ -636,6 +646,7 @@ export default {
 #subtaskTitle {
   margin-top: 0px;
   text-align: left;
+  cursor: default;
 }
 
 
@@ -719,7 +730,7 @@ h1{
   text-align: center;
   font-size: 120%;
   color: #474a4d;
-
+cursor: default;
   padding: 5px;
   border-radius: 5px;
 }

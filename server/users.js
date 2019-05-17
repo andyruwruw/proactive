@@ -6,6 +6,14 @@ const auth = require("./auth.js");
 
 const SALT_WORK_FACTOR = 10;
 
+/*
+const item = require("./item.js");
+const Item = item.model;
+
+const preferences = require("./preferences.js");
+const Preferences = preferences.model;
+*/
+
 const userSchema = new mongoose.Schema({
   username: String,
   password: String,
@@ -172,6 +180,100 @@ router.delete("/", auth.verifyToken, User.verify, async (req, res) => {
 // Get current user if logged in.
 router.get('/', auth.verifyToken, User.verify, async (req, res) => {
   return res.send(req.user);
+});
+
+router.put('/newpassword', auth.verifyToken, User.verify, async (req, res) => {
+  console.log("Attempting to create user");
+if (!req.body.password)
+  return res.status(400).send({
+    message: "Password required."
+  });
+
+try {
+  const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
+
+    // hash the password along with our new salt
+  const hash = await bcrypt.hash(req.body.password, salt);
+
+  // override the plaintext password with the hashed one
+  let password = hash;
+
+  //  check to see if username already exists
+  /*
+  await Item.update({
+    user: req.user
+  },
+  {
+    $set: {
+      "user.password": password,
+    }
+  });
+  await Preferences.updateOne({
+    user: req.user
+  },
+  {
+    $set: {
+      "user.password": password,
+    }
+  });
+  */
+  const user = await User.updateOne({
+    username: req.user.username
+  },
+  {
+    $set: {
+        "password": password,
+    }
+  });
+  res.send(user);
+} catch (error) {
+  console.log(error);
+  return res.sendStatus(500);
+}
+});
+
+router.put('/newusername', auth.verifyToken, User.verify, async (req, res) => {
+  console.log("Attempting to create user");
+if (!req.body.username)
+  return res.status(400).send({
+    message: "Username required."
+  });
+
+try {
+
+  //  check to see if username already exists
+  /*
+  await Item.update({
+    user: req.user
+  },
+  {
+    $set: {
+      "user.username": req.body.username,
+    }
+  });
+  await Preferences.updateOne({
+    user: req.user
+  },
+  {
+    $set: {
+      "user.username": req.body.username,
+    }
+  });
+  */
+  const userchanged = await User.updateOne({
+    username: req.user.username
+  },
+  {
+    $set: {
+        "username": req.body.username,
+    }
+  });
+  console.log(userchanged);
+  res.send(userchanged);
+} catch (error) {
+  console.log(error);
+  return res.sendStatus(500);
+}
 });
 
 module.exports = {
