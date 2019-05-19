@@ -101,7 +101,7 @@
   cursor: default;
   color: #516477;
   transition: font-size .2s ease 0s, margin-top .2s ease 0s, opacity .2s ease;;
-  animation: title 7.5s ease;
+  animation: title 5s ease;
 }
 #maintitle:hover{
   font-size: 210%;
@@ -181,7 +181,7 @@
   margin: 15px 17px;
   background-size: cover;
   opacity: 0.75;
-  animation: fade-in 2s ease;
+  animation: fade-in 3s ease;
   transition: width .2s ease 0s, height .2s ease 0s, margin .2s ease 0s;
 }
 

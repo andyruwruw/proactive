@@ -134,7 +134,7 @@ export default {
 
 <style scoped>
 .fade{
-  animation: fade-in 2s ease;
+  animation: fade-in 1s ease;
 }
 
 .home {
@@ -211,7 +211,7 @@ color: white;
   display: block;
   margin: 0 auto;
   margin-top: 7%;
-  animation: fade-in 6s ease 0s;
+  animation: fade-in 3s ease 0s;
   
   width: calc(50vw);
   height: calc(50vw);

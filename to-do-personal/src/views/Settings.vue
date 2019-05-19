@@ -6,9 +6,10 @@
       <register v-else/>
     </div>
     <div class="slide main" v-else>
+      <div id="main-flex">
       <h1 v-bind:class="{ invertlights: preferences.colors}" >SETTINGS</h1>
+      </div>
       <div class="added-margin">
-        
         <div class="flex-title">
           <div v-bind:class="{ invertlights: preferences.colors}" class="image" id="account"/>
           <h2 v-bind:class="{ invertlights: preferences.colors}" >Account</h2>
@@ -141,12 +142,8 @@
             <h3 v-bind:class="{ invertlights: preferences.colors}" >Item Backgrounds On / Off</h3>
           </div>
 
-
-
-
-
           <div class="flex add-margin-top">
-            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.groupsetting" @click="changeGroupSettings(0)" @mouseover="hover" class="button image" id="switchon"/>
+            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.groupsetting" @click="changeGroupSettings(0)" @mouseover="hover" class="button image" id="switchon"></div>
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.groupsetting" @click="changeGroupSettings(1)" @mouseover="hover" class="button image" id="switchoff"/>
             <h3 v-bind:class="{ invertlights: preferences.colors}" >Task Groups On / Off</h3>
           </div>
@@ -161,10 +158,31 @@
           </div>
 
           <div class="flex">
-            <div v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" v-if="preferences.labels[0]" @mouseover="hover" class="button image" id="switchon"/>
-            <div v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" v-if="!preferences.labels[0]" @mouseover="hover" class="button image" id="switchoff"/>
-            <h3 v-bind:class="{ invertlights: preferences.colors, unactive : !preferences.groupsetting}" >Edit Task Groups</h3>
+            <div v-bind:class="{ invertlights: preferences.colors, unactive : preferences.groupsetting != 2}" @mouseover="hover" @click="editGroupCustom" class="button image tooltip" id="button"><span v-if="preferences.tooltipsactive" class="tooltiptext">Create and Rearrange Groups</span></div>
+            <h3 v-bind:class="{ invertlights: preferences.colors, unactive : preferences.groupsetting != 2}" >Edit Task Groups</h3>
           </div>
+
+          <div v-bind:class="{ invertGROUP: preferences.colors, unactive : preferences.groupsetting != 2}" id="groupCustomDiv" v-if="groupCustomEdit">
+            <div class="flex" id="centerGROUP">
+              <div v-bind:class="{ invertlights: preferences.colors, unactive : preferences.groupsetting != 2}" @mouseover="hover" @click="saveCustomGroup" class="button image" id="plus-image"/>
+              <h3 v-bind:class="{ invertlights: preferences.colors, unactive : preferences.groupsetting != 2}">New Group</h3>
+              <input class="fase-fade" type="text" v-model="groupname"/>
+            </div>
+            <div v-bind:class="{ invertlights: preferences.colors, unactive : preferences.groupsetting != 2}" draggable="true" v-on:dragstart="dragItem(group)" v-on:dragover.prevent v-on:drop="dropItem(group)" class="groupdiv" v-for="group in preferences.groups" v-bind:key="group.num">
+              <h3 v-if="!group.edit" >{{group.name}}</h3>
+              <input v-if="group.edit" class="fase-fade" type="text" v-model="newGroupName"/>
+              <div class="flex" id="nomargin">
+                <div  @mouseover="hover" @click="deleteCustomGroup(group.name)" class="button image" id="delete-image"/>
+                <div  @mouseover="hover" @click="editCustomGroup(group.index)" class="button image" id="edit-image"/>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+
         </div>
 
         <div class="flex-title">
@@ -194,16 +212,6 @@
             <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchoff"/>
             <h3 v-bind:class="{ invertlights: preferences.colors}" >Labels On / Off</h3>
           </div>
-          <div class="flex">
-            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchon"/>
-            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchoff"/>
-            <h3 v-bind:class="{ invertlights: preferences.colors}" >Due Dates On / Off</h3>
-          </div>
-          <div class="flex">
-            <div v-bind:class="{ invertlights: preferences.colors}" v-if="preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchon"/>
-            <div v-bind:class="{ invertlights: preferences.colors}" v-if="!preferences.labels[2]" @mouseover="hover" @click="editLabels()" class="button image" id="switchoff"/>
-            <h3 v-bind:class="{ invertlights: preferences.colors}" >SubTasks On / Off</h3>
-          </div>
         </div>
       </div>
       <div id="button-flex">
@@ -229,6 +237,11 @@ export default {
     return {
       password: "",
       username: "",
+      groupname: "",
+      newGroupName: "",
+
+      drag: null,
+
       editPass: false,
       editUser: false,
 
@@ -248,6 +261,7 @@ export default {
       groupEdit: false,
 
       groupOption: ["None", "By Due Date", "Custom Groups"],
+      groupCustomEdit: false,
 
       music: ["What a Difference a Day Makes", "What a Difference a Day Makes", "Ova Da Wudz", "Chopin 24 Preludes Op. 28 No. 15", "Akita Mani Yo", "Day and Night", "Random", "Random", "Random", "Random", "Random", "Random", "Random", "Random",],
       soundPacks: ["Original", "Original", "8-Bit", "Wood Chips", "Bubblez"],
@@ -261,6 +275,114 @@ export default {
   },
 
   methods: {
+    dragItem(item) {
+      this.drag = item;
+    },
+    async dropItem(item) {
+      const indexItem = this.preferences.groups.indexOf(this.drag);
+      let indexTarget = this.preferences.groups.indexOf(item);
+      if (indexTarget == -1){
+        indexTarget = this.preferences.groups.length;
+      }
+      var newGroups = this.preferences.groups;
+      newGroups.splice(indexItem,1);
+      newGroups.splice(indexTarget,0,this.drag);
+
+      var changes = [];
+
+      for (var i = 0; i < this.items.length; i++)
+      {
+        for (var j = 0; j < newGroups.length; j++)
+        {
+          if (this.items[i].group == newGroups[j].index)
+          {
+            await this.$store.dispatch("changeGroup", {group: j, _id: this.items[i]._id});
+            j = newGroups.length;
+          }
+        }
+      }
+
+      for(var i = 0; i < newGroups.length; i++)
+      {
+        newGroups[i].index = i;
+      }
+      await this.$store.dispatch("updatePreferences", {tag: "groups", set: newGroups});
+      this.saved = false;
+      this.changes = false;
+    },
+    async editCustomGroup(index) {
+      var newGroups = this.preferences.groups;
+      if (newGroups[index].edit == null || newGroups[index].edit == false)
+      {
+        newGroups[index].edit = true;
+        this.press();
+      }
+      else if (newGroups[index].edit && this.newGroupName != "")
+      {
+        newGroups[index].name = this.newGroupName;
+        this.newGroupName = "";
+        await this.$store.dispatch("updatePreferences", {tag: "groups", set: newGroups});
+        this.press();
+        this.saved = false;
+        this.changes = false;
+      }
+    },
+    async deleteCustomGroup(name) {
+        var newGroups = this.preferences.groups;
+        var index = null
+        for (var i = 0; i < newGroups.length; i++)
+        {
+          if (newGroups[i].name == name)
+          {
+            newGroups.splice(i, 1);
+            index = i;
+            break;
+          }
+        }
+        for (var i = 0; i < this.items.length; i++)
+        {
+          if (this.items[i].group == index)
+          {
+            await this.$store.dispatch("changeGroup", {group: -1, _id: this.items[i]._id});
+          }
+          if (this.items[i].group >= index)
+          {
+            await this.$store.dispatch("changeGroup", {group: (this.items[i].group - 1), _id: this.items[i]._id});
+          }
+        }
+        for(var i = 0; i < newGroups.length; i++)
+        {
+          newGroups[i].index = i;
+        }
+        await this.$store.dispatch("updatePreferences", {tag: "groups", set: newGroups});
+        this.$store.dispatch("playSound", {sound: 1, volume: 0});
+        this.saved = false;
+        this.changes = false;
+    },
+    async saveCustomGroup() {
+      if (this.groupname != "")
+      {
+        var newGroups = this.preferences.groups;
+        newGroups.push({index: this.preferences.groups.length, name: this.groupname});
+        await this.$store.dispatch("updatePreferences", {tag: "groups", set: newGroups});
+        this.press();
+        this.groupname = "";
+        this.saved = false;
+        this.changes = false;
+      }
+    },
+    editGroupCustom() {
+      this.press();
+      if (this.groupCustomEdit)
+      {
+        this.groupCustomEdit = false;
+        this.groupname = "";
+      }
+      else
+      {
+        this.groupCustomEdit = true;
+      }
+    },
     groupSettingsOn(){
       this.press();
       this.groupSettings = !this.groupSettings;
@@ -617,6 +739,10 @@ export default {
     user() {
       return this.$store.state.user;
     },
+    items()
+    {
+      return this.$store.state.items;
+    },
     loginorregister()
     {
       return this.$store.state.loginorregister;
@@ -694,6 +820,47 @@ export default {
 </script>
 
 <style scoped>
+.margin-around {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+#main-flex {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.invertGROUP {
+  background-color: rgb(45, 47, 51) !important;
+}
+#centerGROUP {
+  margin: 0 auto;
+  width: 380px;
+  margin-bottom: 20px;
+}
+#nomargin {
+  margin-bottom: 0px;
+  width: 20%;
+  max-width: 75px;
+  justify-content: space-around;
+}
+.groupdiv {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.897);
+  border: 1px solid rgba(0, 0, 0, 0.178);
+  border-radius: 30px;
+  padding: 5px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+#groupCustomDiv {
+  margin-left: 00px;
+  background-color: rgba(236, 236, 236, 0.445);
+  padding: 20px;
+  padding-bottom: 5px;
+  border-radius: 20px;
+  animation: fade 1s ease;
+}
 .groupbutton{
   margin: 0px;
   margin-left: 10px;
@@ -775,7 +942,6 @@ h1 {
   font-size: 120%;
   color: #7d8388;
   border-radius: 5px;
-  margin-bottom: 10px;
 }
 
 h2 {
@@ -859,6 +1025,20 @@ input:focus {
   font-weight: bolder !important;
 }
 
+.flex-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0px;
+  opacity: .3;
+  transition: color .3s ease, font-weight .3s ease, opacity .3s ease;
+}
+
+.flex-info:hover {
+  opacity: 1;
+  color: black !important;
+  font-weight: bolder !important;
+}
+
 .image {
   display: block;
   width: 25px;
@@ -867,6 +1047,17 @@ input:focus {
   border: 0px;
   background-size: cover;
   opacity: .95;
+}
+
+.image-smaller {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(0,0,0,0);
+  border: 0px;
+  background-size: cover;
+  opacity: .95;
+  margin-right: 5px;
 }
 
 .button:hover{
@@ -921,6 +1112,11 @@ button {
 
 #account {
   background-image: url("../assets/account.png");
+}
+
+#information {
+  background-image: url("../assets/info.png");
+
 }
 
 #switchon {
@@ -1066,5 +1262,76 @@ background-image: url("../assets/group-on.png");
 #save-image {
   background-image: url("../assets/save.png");
   filter: invert(100%);
+}
+
+
+#plus-image {
+  background-image: url("../assets/plus.png");
+  border-radius: 50px;
+  transition: background-color .5s ease, filter .5s ease;
+}
+
+#plus-image:hover {
+  background-color: rgba(199, 119, 27, 0.952);
+  background-position: center;
+  filter: invert(100%);
+}
+
+#delete-image {
+  background-image: url("../assets/delete.png");
+  opacity: .5;
+  transition: opacity .5s ease;
+}
+
+#edit-image {
+  background-image: url("../assets/edit.png");
+  opacity: .5;
+  transition: opacity .5s ease;
+}
+
+#delete-image:hover {
+  opacity: 1;
+}
+
+#edit-image:hover {
+  opacity: 1;
+}
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #555 !important;
+  opacity: 1 !important;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  font-size: 85%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1 !important;
 }
 </style>

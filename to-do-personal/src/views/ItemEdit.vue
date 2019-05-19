@@ -11,6 +11,26 @@
         <p id="error" v-if="error != ''">{{error}}</p>
         <input class="nomargin input" v-bind:class="{texterror: isError, invertinput: preferences.colors}" type="text" placeholder="Task" v-model="title"/>
         <textarea v-bind:class="{invertinput: preferences.colors}" class="input" id="descript" cols="40" rows="5" placeholder="Description" v-model="description"/>
+        
+
+        <div v-bind:class="{ inverttitle: preferences.colors}" class="different-width flex-title" id="groupdiv">
+          <div v-bind:class="{ invertlights: preferences.colors}" class="center short-flex">
+            <div id="group-image"/>
+            <h1 v-if="preferences.labels[2]">Group: </h1>
+            <h1 @mouseover="hover" id="currentGroup" >{{groupName}}</h1>
+          </div>
+          <button v-bind:class="{ invertlights: preferences.colors}" v-if="!editgroup" @mouseover="hover" @click="startEditGroup" class="small-button add-button" id="left-button"></button>
+          <button v-bind:class="{ invertlights: preferences.colors}" v-if="editgroup" @mouseover="hover" @click="startEditGroup" class="small-button minus-button" id="left-button"></button>
+        </div>
+        <div v-bind:class="{ invertlights: preferences.colors}" v-if="editgroup" id="groupOptions">
+          <div v-bind:class="{ invertgroup: preferences.colors}" @mouseover="hover" @click="changegroup(-1)" class="group">
+            <h1 class="inherit-color">No Group</h1>
+          </div>
+          <div v-bind:class="{ invertgroup: preferences.colors}" @mouseover="hover" @click="changegroup(group.index)" class="group" v-for="group in preferences.groups" v-bind:key="group.num">
+            <h1 class="inherit-color">{{group.name}}</h1>
+          </div>
+        </div>
+
 
         <div v-if="preferences.labels[2]" id="buttons-div">
           <button class="button create" @mouseover="hover" @click="updateTask" id="createItem"><div id="create-image"/>Update</button>
@@ -92,7 +112,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     
@@ -125,10 +144,28 @@ export default {
         calendar: null,
         today: null,
         show: false,
+        editgroup: false,
+        group: -1,
         months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
     }
   },
   methods: {
+    changegroup(index) {
+      this.press();
+      this.group = index;
+      this.editgroup = false;
+    },
+    startEditGroup() {
+      this.press();
+      if (this.editgroup)
+      {
+        this.editgroup = false;
+      }
+      else 
+      {
+        this.editgroup = true;
+      }
+    },
     async updateTask(){
       if (this.title != "")
       {
@@ -138,7 +175,7 @@ export default {
           description: this.description,
           due: this.due,
           subitems: this.subitems,
-          group: -1,
+          group: this.group,
           priority: 0,
           index: this.item.index,
         };
@@ -147,6 +184,7 @@ export default {
         this.done = false;
         this.subitems = [];
         this.error = '';
+        this.group = -1;
         await this.$store.dispatch("updateItem", data);
         this.$store.dispatch("playSound", {sound: 4, volume: 0});
         this.$router.push('/');
@@ -164,6 +202,7 @@ export default {
       this.done = false;
       this.subitems = [];
       this.error = '';
+      this.group = -1;
       this.$store.dispatch("deleteItem", {_id: this.item._id});
       this.$router.push('/');
     },
@@ -176,6 +215,7 @@ export default {
       this.done = false;
       this.subitems = [];
       this.error = '';
+      this.group = -1;
       this.$router.push('/');
     },
     startSubtask() {
@@ -357,16 +397,26 @@ export default {
     },
     preferences() {
       return this.$store.state.preferences;
-    }
+    },
+    groupName() {
+      if (this.group == -1)
+      {
+        return "No Group";
+      }
+      else
+      {
+        return this.preferences.groups[this.group].name;
+      }
+    },
   },
   async created() {
-    
     await this.$store.dispatch("getItem", {_id: this.$route.params._id});
     this.title = this.item.title;
     this.description = this.item.description;
     this.done = this.item.done;
+    this.group = this.item.group;
     
-    if (this.due != null)
+    if (this.item.due != null)
     {
       this.due = new Date(this.item.due);
       this.dueString = "" + this.due.getDate() + " " + this.months[this.due.getMonth()] + ", " + this.due.getFullYear();
@@ -417,6 +467,39 @@ export default {
 </script>
 
 <style scoped>
+.group {
+  background-color: rgba(210, 227, 252, 0.39);
+  border: 1px solid rgba(161, 171, 187, 0.185);
+  border-radius: 50px;
+  margin: 10px;
+  padding: 0px;
+  transition: background-color .5s ease, border .5s ease, color .5s ease;
+}
+.inherit-color {
+  color: inherit;
+}
+.group:hover {
+  background-color: rgba(58, 117, 204, 0.5);
+  color: white;
+  border: 1px solid rgba(161, 171, 187, 0.185);
+}
+#groupOptions {
+  background-color: rgba(238, 238, 238, 0);
+  width: 85%;
+  margin: 0 auto;
+  border-radius: 5px;
+  animation: fade 1s ease;
+}
+#left-button {
+  position: absolute;
+  right: 2px;
+  top: 5px;
+}
+#groupdiv {
+  position: relative;
+  margin-top: 25px;
+  justify-content: left;
+}
 .alittlemargin {
   margin-top: 5px !important;
   margin-bottom: 5px !important;
@@ -835,7 +918,7 @@ cursor: default;
 #buttons-div {
   display: flex;
   margin: 0 auto;
-  margin-top: 15px;
+  margin-top: 25px;
   margin-bottom: 15px;
   justify-content: space-between;
   width: 95%;
@@ -963,6 +1046,18 @@ cursor: default;
   background-color: rgb(228, 239, 255);
   border: 1px solid rgba(230, 228, 228, 0.664);
 }
+.invertgroup
+{
+  background-color: rgb(49, 51, 54) !important;
+  border: 1px solid rgb(44, 44, 44) !important;
+  color: rgb(146, 146, 146);
+}
+.invertgroup:hover
+{
+  background-color: rgba(58, 117, 204, 0.5) !important;
+  color: white !important;
+  border: 1px solid rgba(161, 171, 187, 0.185) !important;
+}
 
 .small-subtask-button {
   display: block;
@@ -972,5 +1067,18 @@ cursor: default;
   border-radius: 5px;
   border: 0px;
 }
+
+#group-image {
+    background-image: url("../assets/group-date.png");
+    display: block;
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+    margin-right: 10px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+
 
 </style>

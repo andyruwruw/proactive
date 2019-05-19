@@ -151,6 +151,28 @@ router.put("/index/:_id", auth.verifyToken, User.verify, async (req, res) => {
   }
 });
 
+router.put("/group/:_id", auth.verifyToken, User.verify, async (req, res) => {
+  try {
+      let item = await Item.updateOne({
+        _id: req.params._id
+      },
+      {
+        $set: {
+            "group": req.body.group,
+        }
+      });
+      let items = await Item.find({
+        user: req.user
+      }).sort({
+        index: 1
+      });
+      return res.send(items);
+  } catch (error) {
+      console.log(error);
+      return res.sendStatus(500);
+  }
+});
+
 // Updates one item for being complete then sends back total Items.
 router.put("/done/:_id", auth.verifyToken, User.verify, async (req, res) => {
   try {

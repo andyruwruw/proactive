@@ -139,7 +139,20 @@ export default new Vuex.Store({
   },
   actions: {
     async changeIndex(context, payload) {
-      await axios.put("/api/item/index/" + payload._id, payload);
+      try {
+        let response = await axios.put("/api/item/index/" + payload._id, payload);
+        context.commit('setItems', response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async changeGroup(context, payload) {
+      try {
+        let response = await axios.put("/api/item/group/" + payload._id, payload);
+        context.commit('setItems', response.data);
+      } catch (error) {
+        console.log(error);
+      }
     },
     toggleLoginRegister(context) {
       try {

@@ -1,9 +1,9 @@
 <template>
 <div id="list">
   <div class="slide">
+
     <div v-bind:class="{besmaller: !preferences.mainmenu && !preferences.labels[0]}" id="top-bar">
-      <h1 class="fade" v-if="noItems && preferences.labels[0]">You have no tasks.</h1>
-      <h1 class="fade" v-if="!noItems && preferences.labels[0]">TASKS</h1>
+      <h1 class="fade" >{{mainGroupTitle}}</h1>
         <div v-if="mainmenu && preferences.mainmenu && !noItems" class="small-mainmenu">
           <button v-if="!preferences.openmenus" v-bind:class="{ invertlights: preferences.colors, activeshown : shown == 0}" @mouseover="hover" @click="showFilteredItems(0)" class="small-button showallbutton tooltip"><span v-if="preferences.tooltipsactive && shown != 0" class="tooltiptext">Show All</span></button>
           <button v-if="!preferences.openmenus" v-bind:class="{ invertlights: preferences.colors, activeshown : shown == 2}" @mouseover="hover" @click="showFilteredItems(2)" class="small-button showactivebutton tooltip"><span v-if="preferences.tooltipsactive && shown != 2" class="tooltiptext">Show Active</span></button>
@@ -19,6 +19,7 @@
           <button v-bind:class="{ invertlights: preferences.colors, activeshown : doneItems, hoveropacity: doneItems}" @mouseover="hover" @click="deleteDone" class="small-button deleteallbutton tooltip"><span  v-if="preferences.tooltipsactive" class="tooltiptext">Delete Done</span></button>
         </div>
     </div>
+
     <div v-if="preferences.groupsetting == 0" id="items">
         <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in items" v-bind:key="item._id">
           <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
@@ -51,10 +52,45 @@
           </div>
         </div>
     </div>
-    
+
     <div v-if="preferences.groupsetting == 1" id="due-days">
-      <div v-if="dayItems(0).length" class="relative" id="today">
-        <h1 class="fade title-day-marker" v-if="preferences.labels[0]">Today</h1>
+      <div v-if="pastDue.length" class="grouping" id="pastdue">
+          <div id="items">
+            <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in pastDue" v-bind:key="item._id">
+            <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+              <div class="flex-nowrap">
+                <div class="doneButton">
+                  <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                  <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+                </div>
+                <div class="details">
+                  <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                  <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+                </div>
+                <div class="task-buttons">
+                  <div class="relative">
+                    <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                    </div>
+                    <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                    <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div v-if="dayItems(0).length" class="grouping" id="today">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length)">Today</h1>
         <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in dayItems(0)" v-bind:key="item._id">
           <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
             <div class="flex-nowrap">
@@ -86,8 +122,9 @@
           </div>
         </div>
       </div>
-      <div v-if="dayItems(1).length" class="relative" id="tomorrow">
-        <h1 class="fade title-day-marker" v-if="!noItems && preferences.labels[0]">Tomorrow</h1>
+      
+      <div v-if="dayItems(1).length" class="grouping" id="tomorrow">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length)">Tomorrow</h1>
         <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in dayItems(1)" v-bind:key="item._id">
           <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
             <div class="flex-nowrap">
@@ -119,39 +156,348 @@
           </div>
         </div>
       </div>
-      <div v-if="dayItems(2).length" class="relative" id="day2">
-        <h1 class="fade title-day-marker" v-if="!noItems && preferences.labels[0]">{{dayName(2)}}</h1>
+      <div v-if="dayItems(2).length" class="grouping" id="day2">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length)">{{dayName(2)}}</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in dayItems(2)" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="dayItems(3).length" class="relative" id="day3">
-        <h1 class="fade title-day-marker" v-if="!noItems && preferences.labels[0]">{{dayName(3)}}</h1>
+      <div v-if="dayItems(3).length" class="grouping" id="day3">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length || dayItems(2).length)">{{dayName(3)}}</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in dayItems(3)" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="dayItems(4).length" class="relative" id="day4">
-        <h1 class="fade title-day-marker" v-if="!noItems && preferences.labels[0]">{{dayName(4)}}</h1>
+      <div v-if="dayItems(4).length" class="grouping" id="day4">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length || dayItems(2).length || dayItems(3).length)">{{dayName(4)}}</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in dayItems(4)" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="dayItems(5).length" class="relative" id="day4">
-        <h1 class="fade title-day-marker" v-if="!noItems && preferences.labels[0]">{{dayName(5)}}</h1>
+      <div v-if="dayItems(5).length" class="grouping" id="day4">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length || dayItems(2).length || dayItems(3).length || dayItems(4).length)">{{dayName(5)}}</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in dayItems(5)" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="dayItems(6).length" class="relative" id="day6">
-        <h1 class="fade title-day-marker" v-if="!noItems && preferences.labels[0]">{{dayName(6)}}</h1>
+      <div v-if="dayItems(6).length" class="grouping" id="day6">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length || dayItems(2).length || dayItems(3).length || dayItems(4).length || dayItems(5).length)">{{dayName(6)}}</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in dayItems(6)" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="weekItems(1).length" class="relative" id="day7">
-        <h1 class="fade title-day-marker" v-if="!noItems && preferences.labels[0]">Next Week</h1>
+      <div v-if="weekItems(1).length" class="grouping" id="day7">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length || dayItems(2).length || dayItems(3).length || dayItems(4).length || dayItems(5).length || dayItems(6).length)">Next Week</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in weekItems(1)" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="furtherOutList.legth" class="relative" id="further-out">
+      <div v-if="furtherOutList.length" class="grouping" id="further-out">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length || dayItems(2).length || dayItems(3).length || dayItems(4).length || dayItems(5).length || dayItems(6).length || weekItems(1).length)">Further Out</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in furtherOutList" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div v-if="noDue.length" class="relative" id="no-due">
+      <div v-if="noDue.length" class="grouping" id="no-due">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && (pastDue.length || dayItems(0).length || dayItems(1).length || dayItems(2).length || dayItems(3).length || dayItems(4).length || dayItems(5).length || dayItems(6).length || weekItems(1).length || furtherOutList.length)">No Due Date</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in noDue" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div v-if="preferences.groupsettig == 2" id="custom">
+    <div v-if="preferences.groupsetting == 2" id="custom">
+
+
+      <div v-for="group in preferences.groups" v-bind:key="group.index">
+        <div class="grouping" id="group" v-if="groupItems(group.index).length">
+          <h1 class="fade title-day-marker" v-if="preferences.labels[0] && groupBefore(group.index)">{{group.name}}</h1>
+          <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in groupItems(group.index)" v-bind:key="item._id">
+            <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+              <div class="flex-nowrap">
+                <div class="doneButton">
+                  <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                  <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+                </div>
+                <div class="details">
+                  <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                  <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+                </div>
+                <div class="task-buttons">
+                  <div class="relative">
+                    <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                    </div>
+                    <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                    <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                      <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grouping" id="group" v-if="groupItems(-1).length">
+        <h1 class="fade title-day-marker" v-if="preferences.labels[0] && groupBefore(-1)">No Group</h1>
+        <div draggable="true" v-on:dragstart="dragItem(item)" v-on:dragover.prevent v-on:drop="dropItem(item)" v-for="item in groupItems(-1)" v-bind:key="item._id">
+          <div class="item" v-bind:class="{ itemdone: (item.done && preferences.colors != 1 && preferences.itembackground), lightsoffthree : (preferences.colors == 1 && preferences.itembackground), itemdoneinvert: (item.done && preferences.colors == 1 && preferences.itembackground), nobackground : !preferences.itembackground}">
+            <div class="flex-nowrap">
+              <div class="doneButton">
+                <button v-if="!item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="done(item._id)" class="small-button done-button"/>
+                <button v-if="item.done" v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="undone(item._id)" class="small-button undone-button"/>
+              </div>
+              <div class="details">
+                <p @click="view(item._id)" v-bind:class="{ crossedOutInvert: (item.done && preferences.colors == 1) ,crossedOut: (item.done && preferences.colors != 1) , inverttext1 : preferences.colors == 1}" class="itemTitle">{{item.title}}</p>
+                <p @click="view(item._id)" v-bind:class="{ crossedOutDescInvert: (item.done && preferences.colors == 1)  ,crossedOutDesc: (item.done && preferences.colors != 1)  , inverttext2 : preferences.colors == 1 }" class="itemDescription">{{item.description}}</p>
+              </div>
+              <div class="task-buttons">
+                <div class="relative">
+                  <div v-if="item.menu && !preferences.openmenus" class="small-menu">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="!item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button menu-button"/>
+                  <button v-bind:class="{ invertlights: preferences.colors}" v-if="item.menu && !preferences.openmenus" @mouseover="hover" @click="toggleItem(item._id)" class="small-button close menu-button"/>
+                  <div v-if="preferences.openmenus" class="small-menu-nobutton">
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="view(item._id)" class="small-button view-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="editItem(item._id)" class="small-button edit-button"/>
+                    <button v-bind:class="{ invertlights: preferences.colors}" @mouseover="hover" @click="deleteItem(item._id)" class="small-button delete-button"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
 
-
-
-    <div id="below" v-on:drop="dropBelow()"></div>
   </div>
-  
 </div>
 </template>
 
@@ -168,6 +514,47 @@ export default {
     }
   },
   methods: {
+    groupBefore(groupNum)
+    {
+      if (groupNum != -1)
+      {
+        for (var i = 0; i < groupNum; i++)
+        {
+          if (this.groupItems(i).length)
+          {
+            return true;
+          }
+        }
+        return false;
+      }
+      else
+      {
+        for (var i = 0; i < this.preferences.groups.length; i++)
+        {
+          if (this.groupItems(i).length)
+          {
+            return true;
+          }
+        }
+        return false;
+      }
+    },
+    groupItems(groupNum)
+    {
+      var full = this.items;
+      console.log(full);
+      var groupArray = [];
+      for (var i = 0; i < full.length; i++)
+      {
+        console.log(full[i]);
+        if (full[i].group == groupNum)
+        {
+          console.log("ADDED");
+          groupArray.push(full[i]);
+        }
+      }
+      return groupArray;
+    },
     dayName(days) {
       var dayNamesList = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       var today = new Date();
@@ -201,8 +588,10 @@ export default {
     },
     dragItem(item) {
       this.drag = item;
+      this.press();
     },
     async dropItem(item) {
+      this.$store.dispatch("playSound", {sound: 2, volume: 0});
       console.log("DROP");
       const indexItem = this.items.indexOf(this.drag);
       let indexTarget = this.items.indexOf(item);
@@ -263,7 +652,6 @@ export default {
         return moment(date).format('d MMMM YYYY');
     },
     filterItems(shown, full) {
-      console.log("FILTER");
       if (shown == 0)
       {
         return full;
@@ -296,7 +684,6 @@ export default {
     },
     dayItems(day)
     {
-      console.log("DAY");
       var today = new Date();
       var dayOfInterest = today.getDate() + day;
       var month = today.getMonth();
@@ -322,14 +709,12 @@ export default {
     },
     weekItems(week)
     {
-      console.log("WEEK");
       var full = this.$store.state.items;
       full = this.filterItems(this.shown, full);
 
       var weekArray = [];
       for (var i = 0; i < full.length; i++)
       {
-        console.log("weekItems " + week + " " + i);
         if (full[i].due == null)
         {
           continue;
@@ -341,7 +726,6 @@ export default {
           var dayOfInterest = today.getDate() + (week * 7) + j;
           var month = today.getMonth();
           var year = today.getFullYear();
-          console.log("weekItems further " + week + " " + j);
           if (dayOfInterest === dateIf.getDate() && year === dateIf.getFullYear() && month === dateIf.getMonth())
           {
             weekArray.push(full[i]);
@@ -353,17 +737,99 @@ export default {
     },
   },
   computed: {
+    mainGroupTitle() {
+      if (this.preferences.labels[0])
+      {
+        if (this.preferences.groupsetting == 0)
+        {
+          if (this.noItems)
+          {
+            return "You have no tasks.";
+          }
+          else 
+          {
+            return "Tasks";
+          }
+        }
+        else if (this.preferences.groupsetting == 1)
+        {
+          if (this.pastDue.length)
+          {
+            return "Past Due";
+          }
+          else if (this.dayItems(0).length)
+          {
+            return "Today";
+          }
+          else if (this.dayItems(1).length)
+          {
+            return "Tomorrow";
+          }
+          else if (this.dayItems(2).length)
+          {
+            return this.dayName(2);
+          }
+          else if (this.dayItems(3).length)
+          {
+            return this.dayName(3);
+          }
+          else if (this.dayItems(4).length)
+          {
+            return this.dayName(4);
+          }
+          else if (this.dayItems(5).length)
+          {
+            return this.dayName(5);
+          }
+          else if (this.dayItems(6).length)
+          {
+            return this.dayName(6);
+          }
+          else if (this.weekItems(1).length)
+          {
+            return "Next Week";
+          }
+          else if (this.furtherOutList.length)
+          {
+            return "Further Out";
+          }
+          else if (this.noDue.length)
+          {
+            return "No Due Date";
+          }
+          else
+          {
+            return "You have no tasks.";
+          }
+        }
+        else if (this.preferences.groupsetting == 2)
+        {
+          if (this.noItems)
+          {
+            return "You have no tasks.";
+          }
+          for (var i = 0; i < this.preferences.groups.length; i++)
+          {
+            if (this.groupItems(i).length)
+            {
+              return this.preferences.groups[i].name;
+            }
+          }
+          if (this.groupItems(-1).length)
+          {
+            return "No Group";
+          }
+        }
+      }
+
+    },
     noDue()
     {
-      console.log("NO DUE");
       var full = this.items;
-      full = this.filterItems(this.shown, full);
 
       var noDueArray = [];
       for (var i = 0; i < full.length; i++)
       {
-        console.log("noDue " + + " " + i);
-
         if (full[i].due == null)
         {
           noDueArray.push(full[i]);
@@ -372,40 +838,67 @@ export default {
       return noDueArray;
     },
     furtherOutList() {
-      console.log("FURTHER DUE");
       var today = new Date();
       var dayOfInterest = today.getDate() + (14);
       var month = today.getMonth();
       var year = today.getFullYear();
-      var newDay = new Date(year, month, dayOfInterest);
+
+      var afterDay = new Date(year, month, dayOfInterest);
 
       var full = this.items;
-      full = this.filterItems(this.shown, full);
+      
       var furtherOutArray = [];
       for (var i = 0; i < full.length; i++)
       {
-        console.log(full.length);
-        console.log("furtherout " + + " " + i);
         if (full[i].due == null)
         {
           continue;
         }
         var dateIf = new Date(full[i].due);
-        if (newDay.getFullYear() < dateIf.getFullYear())
+        if (afterDay.getFullYear() < dateIf.getFullYear())
         {
           furtherOutArray.push(full[i]);
         }
-        else if (newDay.getMonth() < dateIf.getMonth())
+        else if (afterDay.getFullYear() == dateIf.getFullYear() && afterDay.getMonth() < dateIf.getMonth())
         {
           furtherOutArray.push(full[i]);
         }
-        else if (newDay.getDate() < dateIf.getDate())
+        else if (afterDay.getFullYear() == dateIf.getFullYear() && afterDay.getMonth() == dateIf.getMonth() && afterDay.getDate() < dateIf.getDate())
         {
           furtherOutArray.push(full[i]);
         }
       }
       return furtherOutArray;
 
+    },
+    pastDue() 
+    {
+      var today = new Date();
+
+      var full = this.items;
+
+      var pastDueArray = [];
+      for (var i = 0; i < full.length; i++)
+      {
+        if (full[i].due == null)
+        {
+          continue;
+        }
+        var itemDate = new Date(full[i].due);
+        if (today.getFullYear() > itemDate.getFullYear())
+        {
+          pastDueArray.push(full[i]);
+        }
+        else if (today.getFullYear() == itemDate.getFullYear() && today.getMonth() > itemDate.getMonth())
+        {
+          pastDueArray.push(full[i]);
+        }
+        else if (today.getFullYear() == itemDate.getFullYear() && today.getMonth() == itemDate.getMonth() && today.getDate() > itemDate.getDate())
+        {
+          pastDueArray.push(full[i]);
+        }
+      }
+      return pastDueArray;
     },
     items()
     {
@@ -448,6 +941,9 @@ export default {
 </script>
 
 <style scoped>
+.grouping {
+  margin-bottom: 30px;
+}
 .tooltip {
   position: relative;
 }
@@ -508,7 +1004,7 @@ export default {
 }
 .right {
   position: absolute;
-  right: 0px;
+  right: -1px;
 }
 
 .deleteallbutton {
@@ -714,6 +1210,7 @@ export default {
 .edit-button:hover {
   opacity: 1;
 }
+
 .delete-button {
   background-image: url("../assets/delete.png");
   opacity: .2;
@@ -750,10 +1247,12 @@ h1{
   text-align: left;
   font-size: 120%;
   color: #a0a7ad;
-cursor: default;
+  cursor: default;
   padding: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   border-radius: 5px;
-  margin-bottom: 10px
+  margin-bottom: 0px
 }
 .item {
     margin-bottom: 15px;
