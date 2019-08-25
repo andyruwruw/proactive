@@ -26,4 +26,4 @@ app.use("/api/item", item.routes);
 const preferences = require("./preferences.js");
 app.use("/api/preferences", preferences.routes);
 
-app.listen(3003, () => console.log('Server listening on port 3003!'));
+app.listen(3001, () => console.log('Server listening on port 3001!'));
