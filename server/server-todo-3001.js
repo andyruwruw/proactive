@@ -28,4 +28,7 @@ app.use("/api/item", item.routes);
 const preferences = require("./preferences.js");
 app.use("/api/preferences", preferences.routes);
 
-app.listen(3001, () => console.log('Server listening on port 3001!'));
+https.createServer({
+  key: fs.readFileSynce('server.key'),
+  cert: fs.readFileSynce('server.cert')
+},app).listen(3001, () => console.log('Server listening on port 3001!'));
