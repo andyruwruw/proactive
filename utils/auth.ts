@@ -1,14 +1,11 @@
 import { NowRequest } from '@vercel/node';
-import * as jwt from 'jsonwebtoken';
+import * as jsonwebtoken from 'jsonwebtoken';
 
-import * as models from '../models/index.js';
+import { User } from '../models';
 
-const User = models.default.User.default;
-
-// Generate a token
 export const generateToken = (data: object, expires: any) => {
-  return jwt.sign(data, process.env.SERVER_SECRET, {
-    expiresIn: expires
+  return jsonwebtoken.sign(data, process.env.SERVER_SECRET, {
+    expiresIn: expires,
   });
 };
 
@@ -18,7 +15,7 @@ export const verifyToken = async (req: NowRequest) => {
     return null;
   }
   try {
-    const decoded = jwt.verify(token, process.env.SERVER_SECRET);
+    const decoded = jsonwebtoken.verify(token, process.env.SERVER_SECRET);
     if ('id' in decoded) {
       let existingUser = await User.findOne({
         _id: decoded.id,
@@ -35,7 +32,7 @@ export const verifyToken = async (req: NowRequest) => {
 export const removeOldTokens = (tokens: Array<String>) => {
   return tokens.filter(token => {
     try {
-      jwt.verify(token, process.env.SERVER_SECRET);
+      jsonwebtoken.verify(token, process.env.SERVER_SECRET);
       return true;
     } catch (error) {
       return false;
@@ -49,6 +46,19 @@ export const login = async (user, res, connection) => {
   }, "24h");
 
   user.removeOldTokens();
+  user.addToken(token);
+  await user.save();
+
+  res.setHeader('Set-Cookie', [`proactive-token=${token}; SameSite=Strict`]);
+  connection.close();
+  return res.status(200).send(user);
+}
+
+export const register = async (user, res, connection) => {
+  let token = generateToken({
+    id: user._id,
+  }, "24h");
+
   user.addToken(token);
   await user.save();
 

@@ -1,16 +1,19 @@
 import { NowRequest, NowResponse } from '@vercel/node';
-import { connect } from 'mongoose';
+import { connection } from 'mongoose';
 
-const {
-  MONGO_USER,
-  MONGO_PASSWORD,
-} = process.env;
+import { connectDB } from '../utils/db';
+connectDB();
 
-connect(`mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@cluster0.oj6kf.mongodb.net/proactive?retryWrites=true&w=majority`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+import { Item } from '../models';
+import { verifyToken } from '../utils/auth';
 
 export default async function (req: NowRequest, res: NowResponse) {
-  return res.status(200).send('Hello');
+  let user = await verifyToken(req);
+
+  let items = await Item.find({
+    user,
+  });
+
+  connection.close();
+  return res.status(200).send(items);
 }

@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const { removeOldTokens } = require('../utils/auth');
 
 const {
-  SERVER_SECRET
+  SALT_ROUNDS,
 } = process.env;
 
 const schema = new mongoose.Schema({
@@ -13,10 +13,6 @@ const schema = new mongoose.Schema({
     required: true,
   },
   password: {
-    type: String,
-    required: true,
-  },
-  name: {
     type: String,
     required: true,
   },
@@ -29,8 +25,7 @@ schema.pre('save', async function(next) {
   }
 
   try {
-    const salt = await bcrypt.genSalt(SERVER_SECRET);
-    const hash = await bcrypt.hash(this.password, salt);
+    const hash = await bcrypt.hashSync(this.password, parseInt(SALT_ROUNDS));
 
     this.password = hash;
     next();
@@ -68,21 +63,4 @@ schema.methods.removeOldTokens = function() {
   this.tokens = removeOldTokens(this.tokens);
 }
 
-// // middleware to validate user account
-// schema.statics.verify = async function(req, res, next) {
-//   // look up user account
-//   const user = await User.findOne({
-//     _id: req.user_id
-//   });
-//   if (!user || !user.tokens.includes(req.token))
-//     return res.clearCookie('token').status(403).send({
-//       error: "Invalid user account."
-//     });
-
-//   req.user = user;
-
-//   next();
-// }
-
-const User = mongoose.model('User', schema);
-export default User;
+export const User = mongoose.model('User', schema);

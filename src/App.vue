@@ -1,9 +1,13 @@
 <template>
   <div class="content">
     <div class="nav-container">
+      <nav-button image="home" />
+
       <h1>
         PROACTIVE
       </h1>
+
+      <nav-button image="settings" />
     </div>
 
     <router-view />
@@ -11,11 +15,12 @@
 </template>
 
 <script>
+import NavButton from '@/components/NavButton.vue';
 
 export default {
   name: 'App',
   components: {
-
+    NavButton,
   },
   data: () => ({
 
@@ -35,7 +40,7 @@ html {
   border-radius: 5px;
   color: #384b5f;
   font-family: 'Roboto Slab', serif;
-  max-width: 1248px;
+  max-width: 1246px;
   margin: 0 auto;
   margin-top: 10px;
   min-height: calc(100vh - 20px);
@@ -57,7 +62,7 @@ html {
   color: #516477;
   font-weight: lighter;
   margin-top: 15px;
-  opacity: .1;
+  opacity: .3;
   text-shadow: 0px 0px 0px rgba(0, 0, 0, 0.61);
   transition: all .2s ease;
 }

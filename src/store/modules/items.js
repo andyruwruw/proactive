@@ -1,23 +1,25 @@
 const state = {
   items: [],
-  item: null,
-  deleted: false,
+  id: null,
 };
 
 const getters = {
-
+  item: (state) => {
+    for (let i = 0; i < state.items.length; i += 1) {
+      if (state.items[i]._id === state.id) {
+        return state.items[i];
+      }
+    }
+    return null;
+  }
 };
 
 const mutations = {
   setItems(state, items) {
-    for (var i = 0; i < items.length; i++)
-    {
-      items[i].menu = false;
-    }
     state.items = items;
   },
-  setItem(state, item) {
-    state.item = item;
+  setID(state, id) {
+    state.id = id;
   },
   setDeleted(state, deleted) {
     state.deleted = deleted;

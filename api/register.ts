@@ -5,19 +5,26 @@ import { connectDB } from '../utils/db';
 connectDB();
 
 import { User } from '../models';
-import { login } from '../utils/auth';
+import { register } from '../utils/auth';
 
 export default async function (req: NowRequest, res: NowResponse) {
   try {
     const existingUser = await User.findOne({
-      username: req.body.username,
+      username: req.body.username
     });
 
-    if (!existingUser || !await existingUser.comparePassword(req.body.password)) {
-      return res.status(400).send('Incorrect username or password...');
+    if (existingUser) {
+      return res.status(400).send('Username taken');
     }
 
-    return await login(existingUser, res, connection);
+    let user = new User({
+      username: req.body.username,
+      password: req.body.password,
+    });
+
+    await user.save();
+
+    return await register(user, res, connection);
   } catch (error) {
     connection.close();
     return res.status(502).send(error);

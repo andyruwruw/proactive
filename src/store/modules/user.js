@@ -1,25 +1,38 @@
+import api from '@/api';
+
 const state = {
   user: null,
-  loginRegister: -1,
 };
 
 const getters = {
-
+  user: (state) => state.user,
 };
 
 const mutations = {
   setUser(state, user) {
     state.user = user;
   },
-  setLoginOrRegister(state) {
-    if (state.loginRegister == -1) {state.loginRegister = 1;}
-    else if (state.loginRegister == 1) {state.loginRegister = 0;}
-    else {state.loginRegister = 1;}
-  },
 };
 
 const actions = {
+  async getUser() {
 
+  },
+  async login({ commit }, payload) {
+    let user = await api.auth.login(payload);
+    if (user) {
+      commit('setUser', user);
+    }
+  },
+  async register({ commit }, payload) {
+    let user = await api.auth.register(payload);
+    if (user) {
+      commit('setUser', user);
+    }
+  },
+  async logout() {
+
+  },
 };
 
 const module = {

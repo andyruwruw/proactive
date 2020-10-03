@@ -1,33 +1,31 @@
 <template>
   <div class="home">
-    <div :class="$style['login-wrapper']">
-      <div :class="$style.image" />
-    </div>
+    <landing v-if="!user" />
+
+    <list v-else />
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
+import Landing from '@/components/Landing';
+import List from '@/components/List';
+
 export default {
   name: 'Home',
   components: {
-
-  }
-}
+    Landing,
+    List,
+  },
+  computed: {
+    ...mapGetters('user', [
+      'user',
+    ]),
+  },
+};
 </script>
 
 <style module>
-.login-wrapper {
 
-}
-
-.login-wrapper .image {
-  background-image: url('../assets/images/landing.gif');
-  background-size: cover;
-  height: 80vw;
-  margin: 0 auto;
-  max-width: 280px;
-  max-height: 280px;
-  opacity: .75;
-  width: 80vw;
-}
 </style>
